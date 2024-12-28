@@ -1,1 +1,2 @@
-rootProject.name = 'demo'
+rootProject.name = 'myProject2025'
+include ':api'
