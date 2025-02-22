@@ -7,4 +7,4 @@ pluginManagement {
 
 rootProject.name = "my-project"
 
-include("core", "api") // 🚀 서브 모듈을 인식하도록 추가
+include("api") // 🚀 서브 모듈을 인식하도록 추가
