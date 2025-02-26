@@ -2,6 +2,7 @@ package com.reservation.application.user.service;
 
 import com.reservation.application.user.model.SignupCommand;
 import com.reservation.application.user.repository.RoleJpaRepository;
+import com.reservation.common.config.UserRole;
 import com.reservation.domain.Role;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
@@ -41,10 +42,10 @@ public class AdminUserInitializer {
         // Admin 계정이 없으면 생성
         if (!userService.existsByUsername("admin")) {
             SignupCommand command = new SignupCommand();
-            command.setUsername("admin");
-            command.setName("admin");
+            command.setUserID("admin");
+            command.setUserName("admin");
             command.setPassword(passwordEncoder.encode("1234")); // 암호화된 비밀번호
-            command.setRoleId(roleRepository.findByCode("00").orElseThrow().getId());
+            command.setRoleCode(UserRole.ADMIN.getCode());
             userService.registerUser(command);
         }
     }

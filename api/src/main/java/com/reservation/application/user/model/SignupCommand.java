@@ -2,26 +2,32 @@ package com.reservation.application.user.model;
 
 
 import com.reservation.common.valid.BaseValidation;
+import com.reservation.common.config.ApiException;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.util.StringUtils;
 
 @Data
+@NoArgsConstructor
 public class SignupCommand implements BaseValidation {
-    private String name;
-    private String username;
+    private String userID;
+    private String userName;
     private String password;
-    private Integer roleId;
+    private String roleCode;
 
     @Override
     public void validate() {
-        if (!StringUtils.hasText(username)) {
-            throw new IllegalArgumentException("Username은 필수 값입니다.");
+        if (!StringUtils.hasText(userID)) {
+            throw new ApiException("userID 필수 값입니다.");
         }
         if (!StringUtils.hasText(password)) {
-            throw new IllegalArgumentException("Password는 필수 값입니다.");
+            throw new ApiException("Password는 필수 값입니다.");
         }
-        if (!StringUtils.hasText(name)) {
-            throw new IllegalArgumentException("Name은 필수 값입니다.");
+        if (!StringUtils.hasText(userName)) {
+            throw new ApiException("userName 필수 값입니다.");
+        }
+        if (!StringUtils.hasText(roleCode)) {
+            throw new ApiException("roleCode 필수 값입니다.");
         }
     }
 }

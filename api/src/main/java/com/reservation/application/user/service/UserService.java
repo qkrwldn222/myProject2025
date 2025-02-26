@@ -10,8 +10,11 @@ import java.util.Optional;
 
 public interface UserService {
     @Transactional
-    public void registerUser(SignupCommand command);
-    public Optional<User> findByUsername(String username);
+    void registerUser(SignupCommand command);
+    Optional<User> findByUsername(String username);
 
-    public boolean existsByUsername(String username);
+    boolean existsByUsername(String username);
+
+    void deleteUserByUserID(String userID);
+
 }

@@ -1,5 +1,6 @@
 package com.reservation.application.user.service;
 
+import com.reservation.common.config.ApiException;
 import com.reservation.domain.Role;
 import com.reservation.domain.User;
 import com.reservation.application.user.model.SignupCommand;
@@ -21,21 +22,32 @@ public class UserRestService implements UserService {
     public void registerUser(SignupCommand command) {
         command.validate();
 
-        if (userRepository.existsByUsername(command.getUsername())) {
-            throw new RuntimeException("Username already exists!");
+        if (userRepository.existsByUserID(command.getUserID())) {
+            throw new ApiException("아이디가 이미 존재합니다.");
         }
 
-        Role role = roleRepository.findById(command.getRoleId())
-                .orElseThrow(() -> new RuntimeException("Role not found!"));
+        Role role = roleRepository.findByCode(command.getRoleCode())
+                .orElseThrow(() -> new ApiException("권한이 없습니다."));
 
         User userEntity = User.builder()
-                .username(command.getUsername())
-                .name(command.getName())
-                .password(command.getPassword()) // 이미 암호화된 상태로 전달
-                .role(role) // Role 객체 직접 주입
+                .username(command.getUserName())
+                .userID(command.getUserID())
+                .password(command.getPassword())
+                .role(role)
                 .build();
 
         userRepository.save(userEntity);
+    }
+
+    public Role findRoleByCode(String roleCode) {
+        return roleRepository.findByCode(roleCode)
+                .orElseThrow(() -> new ApiException("Role not found!"));
+    }
+
+    @Transactional
+    public void deleteUserByUserID(String userID) {
+        Optional<User> user = userRepository.findByUserID(userID);
+        user.ifPresent(userRepository::delete);
     }
 
     public Optional<User> findByUsername(String username) {

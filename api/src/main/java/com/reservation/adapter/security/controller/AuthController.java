@@ -3,12 +3,15 @@ package com.reservation.adapter.security.controller;
 
 import com.reservation.adapter.security.config.JwtTokenProvider;
 import com.reservation.adapter.security.mapper.SecurityRequestMapper;
+import com.reservation.adapter.security.model.DeleteUserRequest;
 import com.reservation.adapter.security.model.JwtResponse;
 import com.reservation.adapter.security.model.LoginRequest;
 import com.reservation.adapter.security.model.SignupRequest;
 import com.reservation.adapter.security.swagger.AuthSwagger;
 import com.reservation.application.user.model.SignupCommand;
 import com.reservation.application.user.service.UserService;
+import com.reservation.common.config.ApiException;
+import com.reservation.common.config.EnableGlobalExceptionHandling;
 import com.reservation.domain.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -16,22 +19,18 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
+@EnableGlobalExceptionHandling
 public class AuthController implements AuthSwagger {
 
     private final UserService userService;
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtProvider;
     private final PasswordEncoder passwordEncoder;
-
-
 
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@RequestBody SignupRequest signupRequest) {
@@ -41,16 +40,27 @@ public class AuthController implements AuthSwagger {
         command.setPassword(encodedPassword);  // 인코딩된 비밀번호 설정
         userService.registerUser(command);
 
-        return ResponseEntity.ok("User registered successfully!");
+        return ResponseEntity.ok("가입이 완료되었습니다.");
     }
 
     @PostMapping("/login")
     public ResponseEntity<JwtResponse> authenticateUser(@RequestBody LoginRequest loginRequest) {
+        // 1. 사용자 조회
+        User user = userService.findByUsername(loginRequest.getUsername())
+                .orElseThrow(() -> new ApiException("사용자를 찾을 수 없습니다."));
+
+        // 2. 비밀번호 검증
+        if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
+            return ResponseEntity.status(401).body(new JwtResponse("인증 실패: 비밀번호가 일치하지 않습니다."));
+        }
+
+        // 3. 인증 객체 생성 및 인증
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword())
+                new UsernamePasswordAuthenticationToken(user.getUsername(), loginRequest.getPassword())
         );
-        // 인증 성공 시 JWT 토큰 생성
-        String jwt = jwtProvider.createToken(authentication);
+        // 4. JWT 토큰 생성
+        String jwt = jwtProvider.createToken(authentication,user);
+
         return ResponseEntity.ok(new JwtResponse(jwt));
     }
 
@@ -58,10 +68,46 @@ public class AuthController implements AuthSwagger {
     @PostMapping("/temp/token")
     public ResponseEntity<JwtResponse> generateTempAdminToken() {
         User admin = userService.findByUsername("admin")
-                .orElseThrow(() -> new RuntimeException("Admin user not found"));
+                .orElseThrow(() -> new RuntimeException("관리자를 찾을 수 없습니다."));
 
         String jwt = jwtProvider.createToken(admin.getUsername(), admin.getRole().getCode());
         return ResponseEntity.ok(new JwtResponse(jwt));
     }
 
+    @PostMapping("/logout")
+    public ResponseEntity<String> logout(@RequestHeader("Authorization") String token) {
+        jwtProvider.revokeToken(token);
+        return ResponseEntity.ok("로그아웃 되었습니다.");
+    }
+
+    @DeleteMapping("/delete")
+    public ResponseEntity<String> deleteUser(@RequestHeader("Authorization") String token, @RequestBody DeleteUserRequest request) {
+        // 토큰에서 유저 정보 가져오기
+        String username = jwtProvider.getUsernameFromToken(token);
+
+        User user = userService.findByUsername(username)
+                .orElseThrow(() -> new ApiException("사용자를 찾을 수 없습니다."));
+
+        // 비밀번호 검증
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword()) || !request.getUserID().equals(user.getUserID())) {
+            throw new ApiException("아이디 또는 비밀번호가 일치하지 않습니다.");
+        }
+
+        // 유저 삭제
+        userService.deleteUserByUserID(request.getUserID());
+
+        // 토큰 무효화
+        jwtProvider.revokeToken(token);
+        return ResponseEntity.ok("탈퇴가 안료되었습니다.");
+    }
+
+    /**
+     * JWT 토큰 재발급 API
+     */
+    @PostMapping("/refresh-token")
+    public ResponseEntity<JwtResponse> refreshToken(@RequestHeader("Authorization") String token) {
+        String oldJwt = token.substring(7);
+        String newJwt = jwtProvider.refreshJwtToken(oldJwt);
+        return ResponseEntity.ok(new JwtResponse(newJwt));
+    }
 }
