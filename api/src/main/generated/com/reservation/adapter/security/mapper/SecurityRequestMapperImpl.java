@@ -5,9 +5,7 @@ import com.reservation.application.user.model.SignupCommand;
 import javax.annotation.processing.Generated;
 
 @Generated(
-    value = "org.mapstruct.ap.MappingProcessor",
-    date = "2025-02-22T22:57:55+0900",
-    comments = "version: 1.5.5.Final, compiler: javac, environment: Java 17.0.10 (Eclipse Adoptium)"
+    value = "org.mapstruct.ap.MappingProcessor"
 )
 public class SecurityRequestMapperImpl implements SecurityRequestMapper {
 
@@ -18,6 +16,11 @@ public class SecurityRequestMapperImpl implements SecurityRequestMapper {
         }
 
         SignupCommand signupCommand = new SignupCommand();
+
+        signupCommand.setUserID( request.getUserID() );
+        signupCommand.setUserName( request.getUserName() );
+        signupCommand.setPassword( request.getPassword() );
+        signupCommand.setRoleCode( request.getRoleCode() );
 
         return signupCommand;
     }

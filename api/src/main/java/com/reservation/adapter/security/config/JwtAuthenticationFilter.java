@@ -25,18 +25,27 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
-        String token = jwtTokenProvider.resolveToken(request);
 
-        if (token != null && jwtTokenProvider.validateToken(token)) {
-            String username = jwtTokenProvider.getUsername(token);
-            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+        // ✅ 임시 토큰 API 요청이면 필터링 제외
+        if (request.getRequestURL().equals("/api/auth/temp/token")) {
+            chain.doFilter(request, response);
+            return;
+        }
 
-            UsernamePasswordAuthenticationToken authentication =
-                    new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+        String token = resolveToken(request);
+        if (token != null && jwtTokenProvider.getUserRoleFromToken(token) != null) {
+            String role = jwtTokenProvider.getUserRoleFromToken(token);
+            request.setAttribute("userRole", role);
         }
 
         chain.doFilter(request, response);
+    }
+
+    private String resolveToken(HttpServletRequest request) {
+        String bearerToken = request.getHeader("Authorization");
+        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7);
+        }
+        return null;
     }
 }
