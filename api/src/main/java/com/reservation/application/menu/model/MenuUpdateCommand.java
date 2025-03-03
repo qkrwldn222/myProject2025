@@ -10,11 +10,11 @@ import org.apache.commons.lang3.ObjectUtils;
 @NoArgsConstructor
 public class MenuUpdateCommand extends MenuSaveCommand implements BaseValidation {
 
-    private Long id;
+  private Long id;
 
-    @Override
-    public void validate() {
-        super.validate();
-        if(ObjectUtils.isEmpty(id)) throw new ApiException("메뉴 키는 필수 값입니다.");
-    }
+  @Override
+  public void validate() {
+    super.validate();
+    if (ObjectUtils.isEmpty(id)) throw new ApiException("메뉴 키는 필수 값입니다.");
+  }
 }

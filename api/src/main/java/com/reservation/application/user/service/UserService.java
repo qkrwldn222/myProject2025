@@ -1,24 +1,22 @@
 package com.reservation.application.user.service;
 
-
-
-import com.reservation.domain.User;
 import com.reservation.application.user.model.SignupCommand;
-import org.springframework.transaction.annotation.Transactional;
-
+import com.reservation.domain.User;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.transaction.annotation.Transactional;
 
 public interface UserService {
-    @Transactional
-    void registerUser(SignupCommand command);
-    Optional<User> findByUsername(String username);
+  @Transactional
+  void registerUser(SignupCommand command);
 
-    Optional<User> findByUserId(String userId);
+  Optional<User> findByUsername(String username);
 
-    boolean existsByUsername(String username);
+  Optional<User> findByUserId(String userId);
 
-    void deleteUserByUserID(String userID);
+  boolean existsByUsername(String username);
 
-    List<User> findAll();
+  void deleteUserByUserID(String userID);
+
+  List<User> findAll();
 }

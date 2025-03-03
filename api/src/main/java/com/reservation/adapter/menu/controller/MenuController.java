@@ -11,11 +11,10 @@ import com.reservation.application.menu.service.MenuService;
 import com.reservation.common.ApiResponse;
 import com.reservation.common.config.EnableGlobalExceptionHandling;
 import com.reservation.domain.Menu;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/menu")
@@ -23,31 +22,31 @@ import java.util.List;
 @EnableGlobalExceptionHandling
 public class MenuController implements MenuSwagger {
 
-    private final MenuService menuService;
+  private final MenuService menuService;
 
-    @GetMapping("/search")
-    @Override
-    public ResponseEntity<ApiResponse<List<MenuSearchResponse>>> search(
-            @RequestParam(value = "name", required = false) String name,
-            @RequestParam(value = "code", required = false) String code,
-            @RequestParam(value = "roleName", required = false) String roleName) {
+  @GetMapping("/search")
+  @Override
+  public ResponseEntity<ApiResponse<List<MenuSearchResponse>>> search(
+      @RequestParam(value = "name", required = false) String name,
+      @RequestParam(value = "code", required = false) String code,
+      @RequestParam(value = "roleName", required = false) String roleName) {
 
-        MenuSearchCommand command = MenuRequestMapper.INSTANCE.toSearchCommand(name, code, roleName);
+    MenuSearchCommand command = MenuRequestMapper.INSTANCE.toSearchCommand(name, code, roleName);
 
-        List<Menu> menus = menuService.searchMenu(command);
+    List<Menu> menus = menuService.searchMenu(command);
 
-        List<MenuSearchResponse> result = MenuResponseMapper.INSTANCE.toMenuSearchResponses(menus);
+    List<MenuSearchResponse> result = MenuResponseMapper.INSTANCE.toMenuSearchResponses(menus);
 
-        return ResponseEntity.ok(ApiResponse.success(result));
-    }
+    return ResponseEntity.ok(ApiResponse.success(result));
+  }
 
-    @Override
-    @PostMapping("/operate")
-    public ResponseEntity<ApiResponse<?>> operateMenu(MenuOperateRequest request) {
-        MenuOperateCommand operateCommand = MenuRequestMapper.INSTANCE.toOperateCommand(request);
+  @Override
+  @PostMapping("/operate")
+  public ResponseEntity<ApiResponse<?>> operateMenu(MenuOperateRequest request) {
+    MenuOperateCommand operateCommand = MenuRequestMapper.INSTANCE.toOperateCommand(request);
 
-        menuService.operateMenu(operateCommand);
+    menuService.operateMenu(operateCommand);
 
-        return ResponseEntity.ok(ApiResponse.success("요청이 완료되었습니다."));
-    }
+    return ResponseEntity.ok(ApiResponse.success("요청이 완료되었습니다."));
+  }
 }

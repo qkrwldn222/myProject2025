@@ -10,14 +10,14 @@ import org.springframework.util.StringUtils;
 @NoArgsConstructor
 public class MenuSaveCommand implements BaseValidation {
 
-    private String name;
-    private String code;
-    private String roleCode;
+  private String name;
+  private String code;
+  private String roleCode;
 
-    @Override
-    public void validate() {
-        if (!StringUtils.hasText(name) || !StringUtils.hasText(code)){
-            throw new ApiException("메뉴 명과 코드는 필수 값 입니다.");
-        }
+  @Override
+  public void validate() {
+    if (!StringUtils.hasText(name) || !StringUtils.hasText(code)) {
+      throw new ApiException("메뉴 명과 코드는 필수 값 입니다.");
     }
+  }
 }

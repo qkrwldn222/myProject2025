@@ -2,10 +2,21 @@ plugins {
     id("org.springframework.boot")
     id("io.spring.dependency-management")
     id("java")
+    id 'com.diffplug.spotless' version '6.22.0'
 }
 
 java {
     toolchain.languageVersion.set(JavaLanguageVersion.of(17))
+}
+
+spotless {
+    java {
+        target 'src/**/*.java' // 적용할 대상
+        googleJavaFormat() // Google Java Format 사용
+        removeUnusedImports() // 사용하지 않는 import 자동 정리
+        trimTrailingWhitespace() // 불필요한 공백 제거
+        endWithNewline() // 파일 끝에 빈 줄 추가
+    }
 }
 
 

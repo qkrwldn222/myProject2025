@@ -6,7 +6,7 @@ import org.mapstruct.factory.Mappers;
 
 @Mapper
 public interface FoodStoreRequestMapper {
-    FoodStoreRequestMapper INSTANCE = Mappers.getMapper(FoodStoreRequestMapper.class);
+  FoodStoreRequestMapper INSTANCE = Mappers.getMapper(FoodStoreRequestMapper.class);
 
-    FoodStoreSearchCommand toStoreSearchCommand(String mgtNo, String bplcNm, String rdnWhlAddr );
+  FoodStoreSearchCommand toStoreSearchCommand(String mgtNo, String bplcNm, String rdnWhlAddr);
 }

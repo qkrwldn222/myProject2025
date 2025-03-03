@@ -10,12 +10,12 @@ import org.springframework.util.ObjectUtils;
 @NoArgsConstructor
 public class MenuDeleteCommand implements BaseValidation {
 
-    private Long id;
+  private Long id;
 
-    @Override
-    public void validate() {
-        if(ObjectUtils.isEmpty(id)) {
-            throw new ApiException("id는 필수 값입니다.");
-        }
+  @Override
+  public void validate() {
+    if (ObjectUtils.isEmpty(id)) {
+      throw new ApiException("id는 필수 값입니다.");
     }
+  }
 }

@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 public class MenuSearchCommand {
-    private String name;
-    private String code;
-    private String roleName;
+  private String name;
+  private String code;
+  private String roleName;
 }
