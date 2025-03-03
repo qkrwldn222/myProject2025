@@ -70,7 +70,7 @@ public class AuthController implements AuthSwagger {
         User admin = userService.findByUsername("admin")
                 .orElseThrow(() -> new RuntimeException("관리자를 찾을 수 없습니다."));
 
-        String jwt = jwtProvider.createToken(admin.getUsername(), admin.getRole().getCode());
+        String jwt = jwtProvider.createToken(admin.getUsername(), admin.getRole().getRoleType().getCode());
         return ResponseEntity.ok(new JwtResponse(jwt));
     }
 

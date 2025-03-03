@@ -1,6 +1,10 @@
 package com.reservation.adapter.security.config;
 
 
+import com.reservation.application.menu.service.MenuRestService;
+import com.reservation.domain.Menu;
+import com.reservation.domain.Role;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -10,12 +14,17 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.util.StringUtils;
 
 import java.util.Arrays;
+import java.util.Optional;
 
 @Configuration
 @EnableWebSecurity
@@ -24,6 +33,7 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final Environment environment;
+    private final MenuRestService menuRestService;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -44,11 +54,32 @@ public class SecurityConfig {
                         auth.requestMatchers("/api/auth/temp/token").denyAll();
                     }
 
-                    // JWT 토큰 기반 Role별 접근 제어
-                    auth.requestMatchers("/store/**").hasAnyAuthority("ROLE_00" , "ROLE_02"); // 00: Admin 만 가능
-//                    auth.requestMatchers("/user/**").hasAnyAuthority("ROLE_00", "ROLE_01"); // 01: 일반 유저
-//                    auth.requestMatchers("/owner/**").hasAnyAuthority("ROLE_00", "ROLE_02"); // 02: 가게 운영자
-//                    auth.requestMatchers("/special/**").hasAuthority("ROLE_03"); // 03: 특정 API 접근 가능
+
+                    auth.requestMatchers(request -> {
+                        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+                        String role = getUserRoleRankFromSecurityContext();
+
+                        System.out.println("현재 요청의 인증 객체: " + authentication);
+                        if (authentication == null || !authentication.isAuthenticated()) {
+                            return false;
+                        }
+
+                        if (!StringUtils.hasText(role)) {
+                            return false;
+                        }
+
+                        int roleRank = Integer.parseInt(role);
+                        String menuCode = extractMenuCode(request);
+
+                        if (StringUtils.hasText(menuCode)) {
+                            Optional<Menu> menu = menuRestService.findMenuByCode(menuCode);
+                            if (menu.isPresent()) {
+                                Role menuRole = menu.get().getRole();
+                                return roleRank <= menuRole.getRank();
+                            }
+                        }
+                        return false;
+                    }).authenticated();
 
                     // 그 외 모든 요청은 인증 필요
                     auth.anyRequest().authenticated();
@@ -57,6 +88,7 @@ public class SecurityConfig {
 
         return http.build();
     }
+
 
     // 비밀번호 암호화
     @Bean
@@ -69,4 +101,24 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
     }
+
+    private String getUserRoleRankFromSecurityContext() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated()) {
+            for (GrantedAuthority authority : authentication.getAuthorities()) {
+                return authority.getAuthority(); // 첫 번째 역할 반환
+            }
+        }
+        return null;
+    }
+
+    private String extractMenuCode(HttpServletRequest request) {
+        String requestURI = request.getRequestURI();
+        String[] parts = requestURI.split("/");
+        if (parts.length > 1) {
+            return parts[1]; // 첫 번째 경로 반환 (예: /store/search -> store 반환)
+        }
+        return null;
+    }
+
 }

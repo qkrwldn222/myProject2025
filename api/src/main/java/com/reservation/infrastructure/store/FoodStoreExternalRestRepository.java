@@ -105,8 +105,4 @@ public class FoodStoreExternalRestRepository implements FoodStoreExternalReposit
         return LocalDate.parse(dateStr, java.time.format.DateTimeFormatter.BASIC_ISO_DATE);
     }
 
-    @Override
-    public List<FoodStore> searchFoodStore() {
-        return null;
-    }
 }

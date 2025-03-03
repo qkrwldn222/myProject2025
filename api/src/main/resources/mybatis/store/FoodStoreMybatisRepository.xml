@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.reservation.infrastructure.store.mybatis.FoodStoreMybatisRepository">
+
+    <insert id="bulkInsert" parameterType="java.util.List">
+        INSERT INTO service.food_store (
+        mgt_no, apv_perm_ymd, apv_cancel_ymd, trd_state_gbn, trd_state_nm,
+        dtl_state_gbn, dtl_state_nm, dcb_ymd, clg_st_dt, clg_end_dt, ropn_ymd,
+        site_tel, site_area, site_post_no, site_whl_addr, rdn_whl_addr,
+        rdn_post_no, bplc_nm, last_mod_ts, update_gbn, update_dt,
+        uptae_nm, x, y, snt_uptae_nm, man_eip_cnt, wme_ip_cnt,
+        trd_pjubns_enm, lvse_nm, wtr_sply_facil_se_nm, tot_ep_num,
+        hoff_ep_cnt, fcty_owk_ep_cnt, fcty_sil_job_ep_cnt, fcty_pdt_job_ep_cnt,
+        bdng_own_se_nm, is_ream, mon_am, mult_usn_upso_yn, facil_tot_scp,
+        jt_upso_asgn_no, jt_upso_main_edf, home_page
+        )
+        VALUES
+        <foreach collection="list" item="store" separator=",">
+            (#{store.mgtNo}, #{store.apvPermYmd}, #{store.apvCancelYmd},
+            #{store.trdStateGbn}, #{store.trdStateNm}, #{store.dtlStateGbn},
+            #{store.dtlStateNm}, #{store.dcbYmd}, #{store.clgStDt}, #{store.clgEndDt},
+            #{store.ropnYmd}, #{store.siteTel}, #{store.siteArea}, #{store.sitePostNo},
+            #{store.siteWhlAddr}, #{store.rdnWhlAddr}, #{store.rdnPostNo},
+            #{store.bplcNm}, #{store.lastModTs}, #{store.updateGbn},
+            #{store.updateDt}, #{store.uptaeNm}, #{store.x}, #{store.y},
+            #{store.sntUptaeNm}, #{store.manEipCnt}, #{store.wmeIpCnt},
+            #{store.trdPjubnsEnm}, #{store.lvseNm}, #{store.wtrSplyFacilSeNm},
+            #{store.totEpNum}, #{store.hoffEpCnt}, #{store.fctyOwkEpCnt},
+            #{store.fctySilJobEpCnt}, #{store.fctyPdtJobEpCnt}, #{store.bdngOwnSeNm},
+            #{store.isReam}, #{store.monAm}, #{store.multUsnUpsoYn}, #{store.facilTotScp},
+            #{store.jtUpSoAsgnNo}, #{store.jtUpSoMainEdf}, #{store.homePage})
+        </foreach>
+    </insert>
+
+    <update id="bulkUpdate" parameterType="java.util.List">
+        <foreach collection="list" item="store" separator=";">
+            UPDATE service.food_store
+            SET
+            apv_perm_ymd = #{store.apvPermYmd},
+            apv_cancel_ymd = #{store.apvCancelYmd},
+            trd_state_gbn = #{store.trdStateGbn},
+            trd_state_nm = #{store.trdStateNm},
+            dtl_state_gbn = #{store.dtlStateGbn},
+            dtl_state_nm = #{store.dtlStateNm},
+            dcb_ymd = #{store.dcbYmd},
+            clg_st_dt = #{store.clgStDt},
+            clg_end_dt = #{store.clgEndDt},
+            ropn_ymd = #{store.ropnYmd},
+            site_tel = #{store.siteTel},
+            site_area = #{store.siteArea},
+            site_post_no = #{store.sitePostNo},
+            site_whl_addr = #{store.siteWhlAddr},
+            rdn_whl_addr = #{store.rdnWhlAddr},
+            rdn_post_no = #{store.rdnPostNo},
+            bplc_nm = #{store.bplcNm},
+            last_mod_ts = #{store.lastModTs},
+            update_gbn = #{store.updateGbn},
+            update_dt = #{store.updateDt},
+            uptae_nm = #{store.uptaeNm},
+            x = #{store.x},
+            y = #{store.y},
+            snt_uptae_nm = #{store.sntUptaeNm},
+            man_eip_cnt = #{store.manEipCnt},
+            wme_ip_cnt = #{store.wmeIpCnt},
+            trd_pjubns_enm = #{store.trdPjubnsEnm},
+            lvse_nm = #{store.lvseNm},
+            wtr_sply_facil_se_nm = #{store.wtrSplyFacilSeNm},
+            tot_ep_num = #{store.totEpNum},
+            hoff_ep_cnt = #{store.hoffEpCnt},
+            fcty_owk_ep_cnt = #{store.fctyOwkEpCnt},
+            fcty_sil_job_ep_cnt = #{store.fctySilJobEpCnt},
+            fcty_pdt_job_ep_cnt = #{store.fctyPdtJobEpCnt},
+            bdng_own_se_nm = #{store.bdngOwnSeNm},
+            is_ream = #{store.isReam},
+            mon_am = #{store.monAm},
+            mult_usn_upso_yn = #{store.multUsnUpsoYn},
+            facil_tot_scp = #{store.facilTotScp},
+            jt_upso_asgn_no = #{store.jtUpSoAsgnNo},
+            jt_upso_main_edf = #{store.jtUpSoMainEdf},
+            home_page = #{store.homePage}
+            WHERE mgt_no = #{store.mgtNo}
+        </foreach>
+    </update>
+
+    <select id="searchFoodStores" parameterType="hashmap" resultType="com.reservation.domain.FoodStore">
+        SELECT
+        mgt_no AS mgtNo,
+        apv_perm_ymd AS apvPermYmd,
+        apv_cancel_ymd AS apvCancelYmd,
+        trd_state_gbn AS trdStateGbn,
+        trd_state_nm AS trdStateNm,
+        dtl_state_gbn AS dtlStateGbn,
+        dtl_state_nm AS dtlStateNm,
+        dcb_ymd AS dcbYmd,
+        clg_st_dt AS clgStDt,
+        clg_end_dt AS clgEndDt,
+        ropn_ymd AS ropnYmd,
+        site_tel AS siteTel,
+        site_area AS siteArea,
+        site_post_no AS sitePostNo,
+        site_whl_addr AS siteWhlAddr,
+        rdn_whl_addr AS rdnWhlAddr,
+        rdn_post_no AS rdnPostNo,
+        bplc_nm AS bplcNm,
+        last_mod_ts AS lastModTs,
+        update_gbn AS updateGbn,
+        update_dt AS updateDt,
+        uptae_nm AS uptaeNm,
+        x AS x,
+        y AS y,
+        snt_uptae_nm AS sntUptaeNm,
+        man_eip_cnt AS manEipCnt,
+        wme_ip_cnt AS wmeIpCnt,
+        trd_pjubns_enm AS trdPjubnsEnm,
+        lvse_nm AS lvseNm,
+        wtr_sply_facil_se_nm AS wtrSplyFacilSeNm,
+        tot_ep_num AS totEpNum,
+        hoff_ep_cnt AS hoffEpCnt,
+        fcty_owk_ep_cnt AS fctyOwkEpCnt,
+        fcty_sil_job_ep_cnt AS fctySilJobEpCnt,
+        fcty_pdt_job_ep_cnt AS fctyPdtJobEpCnt,
+        bdng_own_se_nm AS bdngOwnSeNm,
+        is_ream AS isReam,
+        mon_am AS monAm,
+        mult_usn_upso_yn AS multUsnUpsoYn,
+        facil_tot_scp AS facilTotScp,
+        jt_upso_asgn_no AS jtUpsoAsgnNo,
+        jt_upso_main_edf AS jtUpsoMainEdf,
+        home_page AS homePage
+        FROM service.food_store
+        <where>
+        <if test="@org.springframework.util.StringUtils@hasText(mgtNo)">
+            AND mgt_no = #{mgtNo}
+        </if>
+        <if test="@org.springframework.util.StringUtils@hasText(bplcNm)">
+            AND bplc_nm LIKE CONCAT('%', #{bplcNm}, '%')
+        </if>
+        <if test="@org.springframework.util.StringUtils@hasText(rdnWhlAddr)">
+            AND rdn_whl_addr LIKE CONCAT('%', #{rdnWhlAddr}, '%')
+        </if>
+        </where>
+    </select>
+
+</mapper>

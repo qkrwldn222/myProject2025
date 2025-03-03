@@ -1,8 +1,8 @@
 package com.reservation.application.user.service;
 
 import com.reservation.application.user.model.SignupCommand;
-import com.reservation.application.user.repository.RoleJpaRepository;
-import com.reservation.common.config.UserRole;
+import com.reservation.infrastructure.role.repository.RoleJpaRepository;
+import com.reservation.common.config.RoleType;
 import com.reservation.domain.Role;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
@@ -22,22 +22,22 @@ public class AdminUserInitializer {
     @Transactional
     public void initAdminUser() {
         // Role이 없으면 생성
-        if (roleRepository.count() == 0) {
-            Role adminRole = new Role();
-            adminRole.setName("ADMIN");
-            adminRole.setCode("00");
-            roleRepository.save(adminRole);
-
-            Role userRole = new Role();
-            userRole.setName("USER");
-            userRole.setCode("01");
-            roleRepository.save(userRole);
-
-            Role storeOwnerRole = new Role();
-            storeOwnerRole.setName("OWNER");
-            storeOwnerRole.setCode("02");
-            roleRepository.save(storeOwnerRole);
-        }
+//        if (roleRepository.count() == 0) {
+//            Role adminRole = new Role();
+//            adminRole.setName("ADMIN");
+//            adminRole.setCode("00");
+//            roleRepository.save(adminRole);
+//
+//            Role userRole = new Role();
+//            userRole.setName("USER");
+//            userRole.setCode("01");
+//            roleRepository.save(userRole);
+//
+//            Role storeOwnerRole = new Role();
+//            storeOwnerRole.setName("OWNER");
+//            storeOwnerRole.setCode("02");
+//            roleRepository.save(storeOwnerRole);
+//        }
 
         // Admin 계정이 없으면 생성
         if (!userService.existsByUsername("admin")) {
@@ -45,7 +45,7 @@ public class AdminUserInitializer {
             command.setUserID("admin");
             command.setUserName("admin");
             command.setPassword(passwordEncoder.encode("1234")); // 암호화된 비밀번호
-            command.setRoleCode(UserRole.ADMIN.getCode());
+            command.setRoleCode(RoleType.ADMIN.getCode());
             userService.registerUser(command);
         }
     }

@@ -2,6 +2,7 @@ package com.reservation.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.apache.ibatis.type.Alias;
 
 import java.time.LocalDate;
 

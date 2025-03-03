@@ -1,11 +1,17 @@
 package com.reservation.domain;
 
+import com.reservation.common.config.RoleType;
+import com.reservation.common.converter.RoleTypeConverter;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 @Entity
 @Table(name = "roles" , schema = "common")
-@Data
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
 public class Role {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -14,9 +20,15 @@ public class Role {
     @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false)
-    private String code;
+    @Convert(converter = RoleTypeConverter.class)
+    @Column(nullable = false, name = "code")
+    private RoleType roleType;
 
     @Column(nullable = false)
     private int rank;
+
+    public GrantedAuthority getGrantedAuthority() {
+        return new SimpleGrantedAuthority(String.valueOf(this.rank));
+    }
+
 }

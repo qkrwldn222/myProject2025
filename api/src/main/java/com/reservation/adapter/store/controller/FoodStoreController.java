@@ -1,38 +1,49 @@
 package com.reservation.adapter.store.controller;
 
 
-import com.reservation.adapter.store.swagger.StoreSwagger;
-import com.reservation.application.store.service.StoreService;
+import com.reservation.adapter.store.mapper.FoodStoreResponseMapper;
+import com.reservation.adapter.store.mapper.FoodStoreRequestMapper;
+import com.reservation.adapter.store.model.FoodStoreSearchResponse;
+import com.reservation.adapter.store.swagger.FoodStoreSwagger;
+import com.reservation.application.store.model.FoodStoreSearchCommand;
+import com.reservation.application.store.service.FoodStoreService;
 import com.reservation.common.ApiResponse;
 import com.reservation.common.config.EnableGlobalExceptionHandling;
 import com.reservation.domain.FoodStore;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
 @EnableGlobalExceptionHandling
-@RequestMapping("/store")
-public class FoodStoreController implements StoreSwagger {
+@RequestMapping("/food-store")
+public class FoodStoreController implements FoodStoreSwagger {
 
-    private final StoreService storeService;
+    private final FoodStoreService foodStoreService;
 
     @Override
     @GetMapping("/all-food")
-    public ResponseEntity<ApiResponse<List<FoodStore>>> getAllFoodStores() {
-        return null;
+    public ResponseEntity<ApiResponse<List<FoodStoreSearchResponse>>> getAllFoodStores(
+            @RequestParam(value = "mgtNo", required = false) String mgtNo,
+            @RequestParam(value = "bplcNm", required = false) String bplcNm,
+            @RequestParam(value = "rdnWhlAddr", required = false) String rdnWhlAddr
+    ) {
+        FoodStoreSearchCommand storeSearchCommand = FoodStoreRequestMapper.INSTANCE.toStoreSearchCommand(mgtNo, bplcNm, rdnWhlAddr);
+
+        List<FoodStore> foodStores = foodStoreService.searchFoodStores(storeSearchCommand);
+
+        List<FoodStoreSearchResponse> result = FoodStoreResponseMapper.INSTANCE.toFoodStoreSearchResponses(foodStores);
+
+        return ResponseEntity.ok(ApiResponse.success(result));
     }
 
     @Override
     @PostMapping("sync-food")
     public ResponseEntity<?> syncFoodStores() {
-        storeService.foodBulkInsert();
-        return ResponseEntity.ok("User sync successfully!");
+        foodStoreService.foodBulkInsert();
+        return ResponseEntity.ok("foodStore sync successfully!");
     }
 }

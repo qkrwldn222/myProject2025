@@ -19,6 +19,7 @@ import org.springframework.stereotype.Component;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 @Component
@@ -43,6 +44,26 @@ public class JwtTokenProvider {
      * JWT 토큰 생성 (Role 포함)
      */
     public String createToken(String username, String roleCode) {
+        Set<String> existingTokens = redisTemplate.keys("*");
+        // 1. 기존 토큰 확인 (사용자가 이미 로그인한 경우 기존 토큰 가져오기)
+        String existingToken = null;
+        for (String token : existingTokens) {
+            if (username.equals(getUsernameFromToken(token))) {
+                existingToken = token;
+                break;
+            }
+        }
+        // 2. 기존 토큰이 있으면 새 토큰으로 갱신
+        if (existingToken != null) {
+            return refreshJwtToken(existingToken);
+        }
+
+        //3. 기존 토큰이 없으면 새 토큰 생성
+        return generateNewToken(username, roleCode);
+    }
+
+
+    private String generateNewToken(String username, String roleCode) {
         Claims claims = Jwts.claims().setSubject(username);
         claims.put("role", roleCode);
 
@@ -56,7 +77,7 @@ public class JwtTokenProvider {
                 .signWith(secret, SignatureAlgorithm.HS256)
                 .compact();
 
-        //Redis에 저장 (만료시간 설정)
+        // Redis에 저장 (만료시간 설정)
         redisTemplate.opsForValue().set(jwt, roleCode, validityInMilliseconds, TimeUnit.MILLISECONDS);
 
         return jwt;
@@ -67,7 +88,7 @@ public class JwtTokenProvider {
      */
     public String createToken(Authentication authentication, User user) {
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        return createToken(userDetails.getUsername(), user.getRole().getCode()); // 기본 ROLE: USER
+        return createToken(userDetails.getUsername(), user.getRole().getRoleType().getCode()); // 기본 ROLE: USER
     }
 
     /**
@@ -93,7 +114,9 @@ public class JwtTokenProvider {
     public boolean validateToken(String token) {
         try {
             Jwts.parserBuilder().setSigningKey(secret).build().parseClaimsJws(token);
-
+            for(String aa : redisTemplate.keys("*")){
+                System.out.println(aa);
+            }
             // Redis에 저장된 토큰인지 확인 (없으면 만료된 것)
             return redisTemplate.hasKey(token);
         } catch (JwtException | IllegalArgumentException e) {
@@ -120,15 +143,15 @@ public class JwtTokenProvider {
         if (!token.startsWith("Bearer ")) {
             throw new ApiException("유효하지 않은 JWT 형식입니다.");
         }
-        redisTemplate.delete(token);
+        redisTemplate.delete(token.substring(7));
     }
 
     public String refreshJwtToken(String oldJwt) {
-        String roleCode = (String) redisTemplate.opsForValue().get(oldJwt);
-
-        if (roleCode == null) {
-            throw new ApiException("🔴 만료되었거나 존재하지 않는 토큰입니다.");
+        if (validateToken("Bearer " + oldJwt)) {
+            throw new ApiException(" 만료되었거나 존재하지 않는 토큰입니다.");
         }
+
+        String roleCode = (String) redisTemplate.opsForValue().get(oldJwt);
 
         // 기존 토큰 삭제
         redisTemplate.delete(oldJwt);

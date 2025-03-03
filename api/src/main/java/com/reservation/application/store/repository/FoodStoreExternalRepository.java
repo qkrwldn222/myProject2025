@@ -8,6 +8,6 @@ import com.reservation.domain.FoodStore;
 import java.util.List;
 
 public interface FoodStoreExternalRepository {
-    List<FoodStore> searchFoodStore();
+    List<FoodStore> fetchFoodStores();
 
 }
