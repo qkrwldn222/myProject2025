@@ -7,10 +7,11 @@ import lombok.Data;
 @Data
 public class DeleteUserRequest {
 
-    @NotNull
-    @Schema(description = "유저 ID", example = "qkrwldn222")
-    private String userID;
-    @NotNull
-    @Schema(description = "비밀번호", example = "1234")
-    private String password;
+  @NotNull
+  @Schema(description = "유저 ID", example = "qkrwldn222")
+  private String userID;
+
+  @NotNull
+  @Schema(description = "비밀번호", example = "1234")
+  private String password;
 }

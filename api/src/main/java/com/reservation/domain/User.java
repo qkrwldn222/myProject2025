@@ -1,33 +1,30 @@
 package com.reservation.domain;
 
+import com.reservation.common.config.BaseEntity;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
-@Table(name = "users" , schema = "common" )
-@Data
+@Table(name = "users", schema = "common")
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class User {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+@Getter
+public class User extends BaseEntity {
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
 
-    @Column(nullable = false, name = "user_id")
-    private String userID;
+  @Column(nullable = false, name = "user_id")
+  private String userID;
 
-    @Column(nullable = false , name = "user_name")
-    private String username;
+  @Column(nullable = false, name = "user_name")
+  private String username;
 
-    @Column(nullable = false)
-    private String password;
+  @Column(nullable = false)
+  private String password;
 
-    @OneToOne
-    @JoinColumn(name = "role_id")
-    private Role role;
-
+  @OneToOne
+  @JoinColumn(name = "role_id")
+  private Role role;
 }

@@ -1,4 +1,6 @@
 spring:
+  aop:
+    proxy-target-class: true
   application:
     name: reservation
   profiles:
@@ -21,6 +23,13 @@ spring:
     host : localhost
     port : 6379
 
+
+cache:
+  ttl:
+    users: 10800000
+    roles: 108000000
+    default: 10800000
+
 springdoc:
   api-docs:
     enabled: true
@@ -32,6 +41,8 @@ mybatis:
   mapper-locations: classpath*:mybatis/**/*.xml
   configuration:
     map-underscore-to-camel-case: true
+
+
 
 interface:
   common-portal :

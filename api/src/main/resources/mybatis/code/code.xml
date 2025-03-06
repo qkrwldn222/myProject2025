@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.reservation.infrastructure.code.mybatis.CodeMybatisRepository">
+
+    <select id="searchGroupCodes" parameterType="com.reservation.infrastructure.code.model.GroupCodeDTO"
+                resultType="com.reservation.infrastructure.code.model.GroupCodeDTO" >
+        select
+            group_cd as groupCode,
+            description,
+            use_yn as useYn,
+            id
+        from common.code_group
+        <where>
+            <if test="@org.springframework.util.StringUtils@hasText(groupCode)">
+              and  group_cd = #{groupCode}
+            </if>
+            <if test="@org.springframework.util.StringUtils@hasText(useYn)">
+             and   use_yn = #{useYn}
+            </if>
+        </where>
+    </select>
+
+    <!-- 신규 등록 -->
+    <insert id="insertGroupCode" parameterType="com.reservation.infrastructure.code.model.GroupCodeDTO">
+        INSERT INTO common.code_group (group_cd, use_yn, description, create_at, create_by, update_at, update_by)
+        VALUES (#{groupCode}, #{useYn}, #{description}, NOW(), #{createBy}, NOW(), #{updateBy})
+    </insert>
+
+    <!-- 수정 -->
+    <update id="updateGroupCode" parameterType="com.reservation.infrastructure.code.model.GroupCodeDTO">
+        UPDATE common.code_group
+        SET use_yn = #{useYn},
+            description = #{description},
+            update_at = NOW(),
+            update_by = #{updateBy}
+        WHERE group_cd = #{groupCode}
+    </update>
+
+</mapper>

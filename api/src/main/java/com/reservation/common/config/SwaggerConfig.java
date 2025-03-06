@@ -11,14 +11,12 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 @Configuration
 @EnableWebMvc
 @OpenAPIDefinition(
-        info = @Info(title = "Reservation API", version = "1.0", description = "API Documentation"),
-        security = @SecurityRequirement(name = "BearerAuth") //모든 API 기본 인증 필요
-)
+    info = @Info(title = "Reservation API", version = "1.0", description = "API Documentation"),
+    security = @SecurityRequirement(name = "BearerAuth") // 모든 API 기본 인증 필요
+    )
 @SecurityScheme(
-        name = "BearerAuth",
-        type = SecuritySchemeType.HTTP,
-        scheme = "bearer",
-        bearerFormat = "JWT"
-)
-public class SwaggerConfig {
-}
+    name = "BearerAuth",
+    type = SecuritySchemeType.HTTP,
+    scheme = "bearer",
+    bearerFormat = "JWT")
+public class SwaggerConfig {}
