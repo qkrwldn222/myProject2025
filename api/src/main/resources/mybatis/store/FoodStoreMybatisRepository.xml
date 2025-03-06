@@ -35,110 +35,214 @@
     </insert>
 
     <update id="bulkUpdate" parameterType="java.util.List">
-        <foreach collection="list" item="store" separator=";">
-            UPDATE service.food_store
-            SET
-            apv_perm_ymd = #{store.apvPermYmd},
-            apv_cancel_ymd = #{store.apvCancelYmd},
-            trd_state_gbn = #{store.trdStateGbn},
-            trd_state_nm = #{store.trdStateNm},
-            dtl_state_gbn = #{store.dtlStateGbn},
-            dtl_state_nm = #{store.dtlStateNm},
-            dcb_ymd = #{store.dcbYmd},
-            clg_st_dt = #{store.clgStDt},
-            clg_end_dt = #{store.clgEndDt},
-            ropn_ymd = #{store.ropnYmd},
-            site_tel = #{store.siteTel},
-            site_area = #{store.siteArea},
-            site_post_no = #{store.sitePostNo},
-            site_whl_addr = #{store.siteWhlAddr},
-            rdn_whl_addr = #{store.rdnWhlAddr},
-            rdn_post_no = #{store.rdnPostNo},
-            bplc_nm = #{store.bplcNm},
-            last_mod_ts = #{store.lastModTs},
-            update_gbn = #{store.updateGbn},
-            update_dt = #{store.updateDt},
-            uptae_nm = #{store.uptaeNm},
-            x = #{store.x},
-            y = #{store.y},
-            snt_uptae_nm = #{store.sntUptaeNm},
-            man_eip_cnt = #{store.manEipCnt},
-            wme_ip_cnt = #{store.wmeIpCnt},
-            trd_pjubns_enm = #{store.trdPjubnsEnm},
-            lvse_nm = #{store.lvseNm},
-            wtr_sply_facil_se_nm = #{store.wtrSplyFacilSeNm},
-            tot_ep_num = #{store.totEpNum},
-            hoff_ep_cnt = #{store.hoffEpCnt},
-            fcty_owk_ep_cnt = #{store.fctyOwkEpCnt},
-            fcty_sil_job_ep_cnt = #{store.fctySilJobEpCnt},
-            fcty_pdt_job_ep_cnt = #{store.fctyPdtJobEpCnt},
-            bdng_own_se_nm = #{store.bdngOwnSeNm},
-            is_ream = #{store.isReam},
-            mon_am = #{store.monAm},
-            mult_usn_upso_yn = #{store.multUsnUpsoYn},
-            facil_tot_scp = #{store.facilTotScp},
-            jt_upso_asgn_no = #{store.jtUpSoAsgnNo},
-            jt_upso_main_edf = #{store.jtUpSoMainEdf},
-            home_page = #{store.homePage}
-            WHERE mgt_no = #{store.mgtNo}
+        UPDATE service.food_store
+        SET
+        apv_perm_ymd = CASE
+        <foreach collection="list" item="store">
+            WHEN mgt_no = #{store.mgtNo} THEN #{store.apvPermYmd}
+        </foreach>
+        ELSE apv_perm_ymd END,
+
+        apv_cancel_ymd = CASE
+        <foreach collection="list" item="store">
+            WHEN mgt_no = #{store.mgtNo} THEN #{store.apvCancelYmd}
+        </foreach>
+        ELSE apv_cancel_ymd END,
+
+        trd_state_gbn = CASE
+        <foreach collection="list" item="store">
+            WHEN mgt_no = #{store.mgtNo} THEN #{store.trdStateGbn}
+        </foreach>
+        ELSE trd_state_gbn END,
+
+        trd_state_nm = CASE
+        <foreach collection="list" item="store">
+            WHEN mgt_no = #{store.mgtNo} THEN #{store.trdStateNm}
+        </foreach>
+        ELSE trd_state_nm END,
+
+        dtl_state_gbn = CASE
+        <foreach collection="list" item="store">
+            WHEN mgt_no = #{store.mgtNo} THEN #{store.dtlStateGbn}
+        </foreach>
+        ELSE dtl_state_gbn END,
+
+        dtl_state_nm = CASE
+        <foreach collection="list" item="store">
+            WHEN mgt_no = #{store.mgtNo} THEN #{store.dtlStateNm}
+        </foreach>
+        ELSE dtl_state_nm END,
+
+        dcb_ymd = CASE
+        <foreach collection="list" item="store">
+            WHEN mgt_no = #{store.mgtNo} THEN #{store.dcbYmd}
+        </foreach>
+        ELSE dcb_ymd END,
+
+        clg_st_dt = CASE
+        <foreach collection="list" item="store">
+            WHEN mgt_no = #{store.mgtNo} THEN #{store.clgStDt}
+        </foreach>
+        ELSE clg_st_dt END,
+
+        clg_end_dt = CASE
+        <foreach collection="list" item="store">
+            WHEN mgt_no = #{store.mgtNo} THEN #{store.clgEndDt}
+        </foreach>
+        ELSE clg_end_dt END,
+
+        ropn_ymd = CASE
+        <foreach collection="list" item="store">
+            WHEN mgt_no = #{store.mgtNo} THEN #{store.ropnYmd}
+        </foreach>
+        ELSE ropn_ymd END,
+
+        site_tel = CASE
+        <foreach collection="list" item="store">
+            WHEN mgt_no = #{store.mgtNo} THEN #{store.siteTel}
+        </foreach>
+        ELSE site_tel END,
+
+        site_area = CASE
+        <foreach collection="list" item="store">
+            WHEN mgt_no = #{store.mgtNo} THEN #{store.siteArea}
+        </foreach>
+        ELSE site_area END,
+
+        site_post_no = CASE
+        <foreach collection="list" item="store">
+            WHEN mgt_no = #{store.mgtNo} THEN #{store.sitePostNo}
+        </foreach>
+        ELSE site_post_no END,
+
+        site_whl_addr = CASE
+        <foreach collection="list" item="store">
+            WHEN mgt_no = #{store.mgtNo} THEN #{store.siteWhlAddr}
+        </foreach>
+        ELSE site_whl_addr END,
+
+        rdn_whl_addr = CASE
+        <foreach collection="list" item="store">
+            WHEN mgt_no = #{store.mgtNo} THEN #{store.rdnWhlAddr}
+        </foreach>
+        ELSE rdn_whl_addr END,
+
+        rdn_post_no = CASE
+        <foreach collection="list" item="store">
+            WHEN mgt_no = #{store.mgtNo} THEN #{store.rdnPostNo}
+        </foreach>
+        ELSE rdn_post_no END,
+
+        bplc_nm = CASE
+        <foreach collection="list" item="store">
+            WHEN mgt_no = #{store.mgtNo} THEN #{store.bplcNm}
+        </foreach>
+        ELSE bplc_nm END,
+
+        last_mod_ts = CASE
+        <foreach collection="list" item="store">
+            WHEN mgt_no = #{store.mgtNo} THEN #{store.lastModTs}
+        </foreach>
+        ELSE last_mod_ts END,
+
+        update_gbn = CASE
+        <foreach collection="list" item="store">
+            WHEN mgt_no = #{store.mgtNo} THEN #{store.updateGbn}
+        </foreach>
+        ELSE update_gbn END,
+
+        update_dt = CASE
+        <foreach collection="list" item="store">
+            WHEN mgt_no = #{store.mgtNo} THEN #{store.updateDt}
+        </foreach>
+        ELSE update_dt END,
+
+        uptae_nm = CASE
+        <foreach collection="list" item="store">
+            WHEN mgt_no = #{store.mgtNo} THEN #{store.uptaeNm}
+        </foreach>
+        ELSE uptae_nm END,
+
+        x = CASE
+        <foreach collection="list" item="store">
+            WHEN mgt_no = #{store.mgtNo} THEN #{store.x}
+        </foreach>
+        ELSE x END,
+
+        y = CASE
+        <foreach collection="list" item="store">
+            WHEN mgt_no = #{store.mgtNo} THEN #{store.y}
+        </foreach>
+        ELSE y END,
+
+        home_page = CASE
+        <foreach collection="list" item="store">
+            WHEN mgt_no = #{store.mgtNo} THEN #{store.homePage}
+        </foreach>
+        ELSE home_page END
+
+        WHERE mgt_no IN
+        <foreach collection="list" item="store" open="(" separator="," close=")">
+            #{store.mgtNo}
         </foreach>
     </update>
 
-    <select id="searchFoodStores" parameterType="hashmap" resultType="com.reservation.domain.FoodStore">
+    <select id="searchFoodStores" parameterType="map" resultType="com.reservation.domain.FoodStore">
         SELECT
-        mgt_no AS mgtNo,
-        apv_perm_ymd AS apvPermYmd,
-        apv_cancel_ymd AS apvCancelYmd,
-        trd_state_gbn AS trdStateGbn,
-        trd_state_nm AS trdStateNm,
-        dtl_state_gbn AS dtlStateGbn,
-        dtl_state_nm AS dtlStateNm,
-        dcb_ymd AS dcbYmd,
-        clg_st_dt AS clgStDt,
-        clg_end_dt AS clgEndDt,
-        ropn_ymd AS ropnYmd,
-        site_tel AS siteTel,
-        site_area AS siteArea,
-        site_post_no AS sitePostNo,
-        site_whl_addr AS siteWhlAddr,
-        rdn_whl_addr AS rdnWhlAddr,
-        rdn_post_no AS rdnPostNo,
-        bplc_nm AS bplcNm,
-        last_mod_ts AS lastModTs,
-        update_gbn AS updateGbn,
-        update_dt AS updateDt,
-        uptae_nm AS uptaeNm,
-        x AS x,
-        y AS y,
-        snt_uptae_nm AS sntUptaeNm,
-        man_eip_cnt AS manEipCnt,
-        wme_ip_cnt AS wmeIpCnt,
-        trd_pjubns_enm AS trdPjubnsEnm,
-        lvse_nm AS lvseNm,
-        wtr_sply_facil_se_nm AS wtrSplyFacilSeNm,
-        tot_ep_num AS totEpNum,
-        hoff_ep_cnt AS hoffEpCnt,
-        fcty_owk_ep_cnt AS fctyOwkEpCnt,
-        fcty_sil_job_ep_cnt AS fctySilJobEpCnt,
-        fcty_pdt_job_ep_cnt AS fctyPdtJobEpCnt,
-        bdng_own_se_nm AS bdngOwnSeNm,
-        is_ream AS isReam,
-        mon_am AS monAm,
-        mult_usn_upso_yn AS multUsnUpsoYn,
-        facil_tot_scp AS facilTotScp,
-        jt_upso_asgn_no AS jtUpsoAsgnNo,
-        jt_upso_main_edf AS jtUpsoMainEdf,
-        home_page AS homePage
+            CAST(mgt_no AS CHAR) AS mgtNo,
+            apv_perm_ymd AS apvPermYmd,
+            apv_cancel_ymd AS apvCancelYmd,
+            trd_state_gbn AS trdStateGbn,
+            trd_state_nm AS trdStateNm,
+            dtl_state_gbn AS dtlStateGbn,
+            dtl_state_nm AS dtlStateNm,
+            dcb_ymd AS dcbYmd,
+            clg_st_dt AS clgStDt,
+            clg_end_dt AS clgEndDt,
+            ropn_ymd AS ropnYmd,
+            site_tel AS siteTel,
+            site_area AS siteArea,
+            site_post_no AS sitePostNo,
+            site_whl_addr AS siteWhlAddr,
+            rdn_whl_addr AS rdnWhlAddr,
+            rdn_post_no AS rdnPostNo,
+            bplc_nm AS bplcNm,
+            last_mod_ts AS lastModTs,
+            update_gbn AS updateGbn,
+            update_dt AS updateDt,
+            uptae_nm AS uptaeNm,
+            x AS x,
+            y AS y,
+            snt_uptae_nm AS sntUptaeNm,
+            man_eip_cnt AS manEipCnt,
+            wme_ip_cnt AS wmeIpCnt,
+            trd_pjubns_enm AS trdPjubnsEnm,
+            lvse_nm AS lvseNm,
+            wtr_sply_facil_se_nm AS wtrSplyFacilSeNm,
+            tot_ep_num AS totEpNum,
+            hoff_ep_cnt AS hoffEpCnt,
+            fcty_owk_ep_cnt AS fctyOwkEpCnt,
+            fcty_sil_job_ep_cnt AS fctySilJobEpCnt,
+            fcty_pdt_job_ep_cnt AS fctyPdtJobEpCnt,
+            bdng_own_se_nm AS bdngOwnSeNm,
+            is_ream AS isReam,
+            mon_am AS monAm,
+            mult_usn_upso_yn AS multUsnUpsoYn,
+            facil_tot_scp AS facilTotScp,
+            jt_upso_asgn_no AS jtUpsoAsgnNo,
+            jt_upso_main_edf AS jtUpsoMainEdf,
+            home_page AS homePage
         FROM service.food_store
         <where>
-        <if test="@org.springframework.util.StringUtils@hasText(mgtNo)">
-            AND mgt_no = #{mgtNo}
+            trd_state_gbn = #{command.trdStateGbn}
+        <if test="@org.springframework.util.StringUtils@hasText(command.mgtNo)">
+            AND mgt_no = #{command.mgtNo}
         </if>
-        <if test="@org.springframework.util.StringUtils@hasText(bplcNm)">
-            AND bplc_nm LIKE CONCAT('%', #{bplcNm}, '%')
+        <if test="@org.springframework.util.StringUtils@hasText(command.bplcNm)">
+            AND bplc_nm LIKE CONCAT('%', #{command.bplcNm}, '%')
         </if>
-        <if test="@org.springframework.util.StringUtils@hasText(rdnWhlAddr)">
-            AND rdn_whl_addr LIKE CONCAT('%', #{rdnWhlAddr}, '%')
+        <if test="@org.springframework.util.StringUtils@hasText(command.rdnWhlAddr)">
+            AND rdn_whl_addr LIKE CONCAT('%', #{command.rdnWhlAddr}, '%')
         </if>
         </where>
     </select>

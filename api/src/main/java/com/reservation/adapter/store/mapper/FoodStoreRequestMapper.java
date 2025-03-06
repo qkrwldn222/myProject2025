@@ -8,5 +8,6 @@ import org.mapstruct.factory.Mappers;
 public interface FoodStoreRequestMapper {
   FoodStoreRequestMapper INSTANCE = Mappers.getMapper(FoodStoreRequestMapper.class);
 
-  FoodStoreSearchCommand toStoreSearchCommand(String mgtNo, String bplcNm, String rdnWhlAddr);
+  FoodStoreSearchCommand toStoreSearchCommand(
+      String mgtNo, String bplcNm, String rdnWhlAddr, String trdStateGbn);
 }

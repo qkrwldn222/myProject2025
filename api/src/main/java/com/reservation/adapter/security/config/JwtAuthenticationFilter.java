@@ -27,12 +27,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
   protected void doFilterInternal(
       HttpServletRequest request, HttpServletResponse response, FilterChain chain)
       throws ServletException, IOException {
-
-    // 임시 토큰 API 요청이면 필터링 제외
-    if (request.getRequestURL().equals("/api/auth/temp/token")) {
-      chain.doFilter(request, response);
-      return;
-    }
+    logger.info("Request URL : " + request.getRequestURL().toString());
 
     String token = resolveToken(request);
     if (token != null && jwtTokenProvider.validateToken(token)) {
@@ -51,7 +46,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
       SecurityContextHolder.getContext().setAuthentication(authentication);
     }
-
     chain.doFilter(request, response);
   }
 

@@ -23,5 +23,5 @@ public class FoodStoreSearchResponse {
   private String siteTel; // 전화번호
 
   @Schema(name = "관리번호", description = "1212121")
-  private Long mgtNo; // 관리번호
+  private String mgtNo; // 관리번호
 }

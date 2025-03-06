@@ -1,5 +1,6 @@
 package com.reservation.domain;
 
+import com.reservation.common.config.BaseEntity;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 import lombok.*;
@@ -10,11 +11,10 @@ import lombok.*;
 @Builder
 @Entity
 @Table(name = "food_store", schema = "service")
-public class FoodStore {
-
+public class FoodStore extends BaseEntity {
   @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY) // 자동 증가 ID 설정
-  private Long mgtNo; // 관리번호
+  @Column(name = "mgt_no", length = 40)
+  private String mgtNo; // 관리번호
 
   @Column(name = "apv_perm_ymd")
   private LocalDate apvPermYmd; // 인허가일자

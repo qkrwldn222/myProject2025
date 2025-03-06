@@ -1,18 +1,16 @@
 package com.reservation.domain;
 
+import com.reservation.common.config.BaseEntity;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Table(name = "users", schema = "common")
-@Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class User {
+@Getter
+public class User extends BaseEntity {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;

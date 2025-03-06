@@ -27,12 +27,32 @@ public class FoodFoodStoreRestService implements FoodStoreService {
     List<FoodStore> createList =
         foodStores.stream().filter(store -> "I".equals(store.getUpdateGbn())).toList();
 
-    foodStoreRepository.bulkInsert(createList);
-    foodStoreRepository.bulkInsert(updateList);
+    bulkInsertInBatches(createList);
+    bulkUpdateInBatches(updateList);
   }
 
   @Override
   public List<FoodStore> searchFoodStores(FoodStoreSearchCommand command) {
     return foodStoreRepository.fetchFoodStores(command);
+  }
+
+  // 1,000개씩 끊어서 Insert 실행
+  private void bulkInsertInBatches(List<FoodStore> foodStores) {
+    int batchSize = 1000;
+    for (int i = 0; i < foodStores.size(); i += batchSize) {
+      int endIndex = Math.min(i + batchSize, foodStores.size());
+      List<FoodStore> batchList = foodStores.subList(i, endIndex);
+      foodStoreRepository.bulkInsert(batchList);
+    }
+  }
+
+  // 1,000개씩 끊어서 Update 실행
+  private void bulkUpdateInBatches(List<FoodStore> foodStores) {
+    int batchSize = 1000;
+    for (int i = 0; i < foodStores.size(); i += batchSize) {
+      int endIndex = Math.min(i + batchSize, foodStores.size());
+      List<FoodStore> batchList = foodStores.subList(i, endIndex);
+      foodStoreRepository.bulkUpdate(batchList);
+    }
   }
 }

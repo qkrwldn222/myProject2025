@@ -42,6 +42,8 @@ mybatis:
   configuration:
     map-underscore-to-camel-case: true
 
+
+
 interface:
   common-portal :
     url : http://openapi.seoul.go.kr:8088

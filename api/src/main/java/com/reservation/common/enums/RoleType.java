@@ -1,4 +1,4 @@
-package com.reservation.common.config;
+package com.reservation.common.enums;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

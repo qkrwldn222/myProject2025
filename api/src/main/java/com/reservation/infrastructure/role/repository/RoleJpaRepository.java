@@ -1,6 +1,6 @@
 package com.reservation.infrastructure.role.repository;
 
-import com.reservation.common.config.RoleType;
+import com.reservation.common.enums.RoleType;
 import com.reservation.domain.Role;
 import java.util.List;
 import java.util.Optional;

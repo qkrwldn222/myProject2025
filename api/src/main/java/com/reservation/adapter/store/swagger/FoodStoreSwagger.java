@@ -22,7 +22,9 @@ public interface FoodStoreSwagger {
   ResponseEntity<ApiResponse<List<FoodStoreSearchResponse>>> getAllFoodStores(
       @RequestParam(value = "mgtNo", required = false) String mgtNo,
       @RequestParam(value = "bplcNm", required = false) String bplcNm,
-      @RequestParam(value = "rdnWhlAddr", required = false) String rdnWhlAddr);
+      @RequestParam(value = "rdnWhlAddr", required = false) String rdnWhlAddr,
+      @RequestParam(value = "trdStateGbn", defaultValue = "01", name = "영업 상태코드")
+          String trdStateGbn);
 
   @Operation(summary = "음식점 목록 동기화", description = "음식점 데이터를 동기화합니다.")
   @SecurityRequirement(name = "BearerAuth")

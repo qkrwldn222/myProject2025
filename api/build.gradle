@@ -11,6 +11,7 @@ java {
 
 spotless {
     java {
+        targetExclude("src/**/generated/**/*.java") // 자동 생성된 파일 제외
         target 'src/**/*.java' // 적용할 대상
         googleJavaFormat() // Google Java Format 사용
         removeUnusedImports() // 사용하지 않는 import 자동 정리
@@ -18,7 +19,6 @@ spotless {
         endWithNewline() // 파일 끝에 빈 줄 추가
     }
 }
-
 
 compileJava {
     options.compilerArgs = [

@@ -1,7 +1,8 @@
 package com.reservation.domain;
 
-import com.reservation.common.config.RoleType;
+import com.reservation.common.config.BaseEntity;
 import com.reservation.common.converter.RoleTypeConverter;
+import com.reservation.common.enums.RoleType;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
@@ -12,7 +13,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Role {
+public class Role extends BaseEntity {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Integer id;

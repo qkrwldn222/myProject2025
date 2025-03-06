@@ -2,7 +2,7 @@ package com.reservation.application.user.service;
 
 import com.reservation.application.user.model.SignupCommand;
 import com.reservation.common.config.ApiException;
-import com.reservation.common.config.RoleType;
+import com.reservation.common.enums.RoleType;
 import com.reservation.domain.Role;
 import com.reservation.domain.User;
 import com.reservation.infrastructure.role.repository.RoleJpaRepository;

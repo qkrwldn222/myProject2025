@@ -1,6 +1,6 @@
 package com.reservation.common.converter;
 
-import com.reservation.common.config.RoleType;
+import com.reservation.common.enums.RoleType;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 

@@ -27,9 +27,12 @@ public class FoodStoreController implements FoodStoreSwagger {
   public ResponseEntity<ApiResponse<List<FoodStoreSearchResponse>>> getAllFoodStores(
       @RequestParam(value = "mgtNo", required = false) String mgtNo,
       @RequestParam(value = "bplcNm", required = false) String bplcNm,
-      @RequestParam(value = "rdnWhlAddr", required = false) String rdnWhlAddr) {
+      @RequestParam(value = "rdnWhlAddr", required = false) String rdnWhlAddr,
+      @RequestParam(value = "trdStateGbn", required = true, defaultValue = "01")
+          String trdStateGbn) {
     FoodStoreSearchCommand storeSearchCommand =
-        FoodStoreRequestMapper.INSTANCE.toStoreSearchCommand(mgtNo, bplcNm, rdnWhlAddr);
+        FoodStoreRequestMapper.INSTANCE.toStoreSearchCommand(
+            mgtNo, bplcNm, rdnWhlAddr, trdStateGbn);
 
     List<FoodStore> foodStores = foodStoreService.searchFoodStores(storeSearchCommand);
 

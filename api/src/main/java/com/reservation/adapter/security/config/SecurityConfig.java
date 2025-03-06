@@ -1,6 +1,7 @@
 package com.reservation.adapter.security.config;
 
 import com.reservation.application.menu.service.MenuRestService;
+import com.reservation.common.config.ApiException;
 import com.reservation.domain.Menu;
 import com.reservation.domain.Role;
 import jakarta.servlet.http.HttpServletRequest;
@@ -10,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -77,10 +79,14 @@ public class SecurityConfig {
                           Optional<Menu> menu = menuRestService.findMenuByCode(menuCode);
                           if (menu.isPresent()) {
                             Role menuRole = menu.get().getRole();
-                            return roleRank <= menuRole.getRank();
+                            boolean hasPermission = roleRank <= menuRole.getRank();
+                            if (!hasPermission) {
+                              throw new ApiException("접근 권한이 없습니다.");
+                            }
+                            return true;
                           }
                         }
-                        return false;
+                        throw new ApiException("접근 권한이 없습니다.");
                       })
                   .authenticated();
 
@@ -107,12 +113,18 @@ public class SecurityConfig {
 
   private String getUserRoleRankFromSecurityContext() {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    if (authentication != null && authentication.isAuthenticated()) {
-      for (GrantedAuthority authority : authentication.getAuthorities()) {
-        return authority.getAuthority(); // 첫 번째 역할 반환
-      }
+    // 인증 정보가 없거나, 익명 인증 (AnonymousAuthenticationToken)인 경우 null 반환
+    if (authentication == null
+        || !authentication.isAuthenticated()
+        || authentication instanceof AnonymousAuthenticationToken) {
+      return null;
     }
-    return null;
+
+    // 권한이 없는 경우 null 반환
+    return authentication.getAuthorities().stream()
+        .findFirst() // 첫 번째 권한을 가져옴
+        .map(GrantedAuthority::getAuthority) // 권한 문자열을 가져옴
+        .orElse(null);
   }
 
   private String extractMenuCode(HttpServletRequest request) {

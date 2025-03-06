@@ -28,7 +28,7 @@ public class ExceptionAspect {
       errorResponse.put("error", ex.getMessage());
       return ResponseEntity.status(ex.getStatus()).body(errorResponse);
     } catch (DataAccessException | PersistenceException ex) {
-      logger.info(ex.getMessage());
+      logger.info(ex.toString());
       // DB 관련 예외 처리
       Map<String, String> errorResponse = new HashMap<>();
       errorResponse.put("error", "데이터베이스 오류");
