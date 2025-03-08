@@ -73,6 +73,7 @@ public class SecurityConfig {
                         }
 
                         int roleRank = Integer.parseInt(role);
+                        if(roleRank == 1 ) return true;
                         String menuCode = extractMenuCode(request);
 
                         if (StringUtils.hasText(menuCode)) {
