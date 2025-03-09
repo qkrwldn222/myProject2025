@@ -13,122 +13,123 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.processing.Generated;
 
-@Generated(value = "org.mapstruct.ap.MappingProcessor")
+@Generated(
+    value = "org.mapstruct.ap.MappingProcessor"
+)
 public class MenuRequestMapperImpl implements MenuRequestMapper {
 
-  @Override
-  public MenuSearchCommand toSearchCommand(String name, String code, String roleName) {
-    if (name == null && code == null && roleName == null) {
-      return null;
+    @Override
+    public MenuSearchCommand toSearchCommand(String name, String code, String roleName) {
+        if ( name == null && code == null && roleName == null ) {
+            return null;
+        }
+
+        MenuSearchCommand menuSearchCommand = new MenuSearchCommand();
+
+        menuSearchCommand.setName( name );
+        menuSearchCommand.setCode( code );
+        menuSearchCommand.setRoleName( roleName );
+
+        return menuSearchCommand;
     }
 
-    MenuSearchCommand menuSearchCommand = new MenuSearchCommand();
+    @Override
+    public MenuOperateCommand toOperateCommand(MenuOperateRequest request) {
+        if ( request == null ) {
+            return null;
+        }
 
-    menuSearchCommand.setName(name);
-    menuSearchCommand.setCode(code);
-    menuSearchCommand.setRoleName(roleName);
+        MenuOperateCommand menuOperateCommand = new MenuOperateCommand();
 
-    return menuSearchCommand;
-  }
+        menuOperateCommand.setSaveList( toSaveCommandList( request.createRequests() ) );
+        menuOperateCommand.setUpdateList( toUpdateCommandList( request.updateRequests() ) );
+        menuOperateCommand.setDeleteList( toDeleteCommandList( request.deleteRequests() ) );
 
-  @Override
-  public MenuOperateCommand toOperateCommand(MenuOperateRequest request) {
-    if (request == null) {
-      return null;
+        return menuOperateCommand;
     }
 
-    MenuOperateCommand menuOperateCommand = new MenuOperateCommand();
+    @Override
+    public List<MenuSaveCommand> toSaveCommandList(List<MenuCreateRequest> createRequests) {
+        if ( createRequests == null ) {
+            return null;
+        }
 
-    menuOperateCommand.setSaveList(toSaveCommandList(request.createRequests()));
-    menuOperateCommand.setUpdateList(toUpdateCommandList(request.updateRequests()));
-    menuOperateCommand.setDeleteList(toDeleteCommandList(request.deleteRequests()));
+        List<MenuSaveCommand> list = new ArrayList<MenuSaveCommand>( createRequests.size() );
+        for ( MenuCreateRequest menuCreateRequest : createRequests ) {
+            list.add( toSaveCommand( menuCreateRequest ) );
+        }
 
-    return menuOperateCommand;
-  }
-
-  @Override
-  public List<MenuSaveCommand> toSaveCommandList(List<MenuCreateRequest> createRequests) {
-    if (createRequests == null) {
-      return null;
+        return list;
     }
 
-    List<MenuSaveCommand> list = new ArrayList<MenuSaveCommand>(createRequests.size());
-    for (MenuCreateRequest menuCreateRequest : createRequests) {
-      list.add(toSaveCommand(menuCreateRequest));
+    @Override
+    public List<MenuUpdateCommand> toUpdateCommandList(List<MenuUpdateRequest> updateRequests) {
+        if ( updateRequests == null ) {
+            return null;
+        }
+
+        List<MenuUpdateCommand> list = new ArrayList<MenuUpdateCommand>( updateRequests.size() );
+        for ( MenuUpdateRequest menuUpdateRequest : updateRequests ) {
+            list.add( toUpdateCommand( menuUpdateRequest ) );
+        }
+
+        return list;
     }
 
-    return list;
-  }
+    @Override
+    public List<MenuDeleteCommand> toDeleteCommandList(List<MenuDeleteRequest> deleteRequests) {
+        if ( deleteRequests == null ) {
+            return null;
+        }
 
-  @Override
-  public List<MenuUpdateCommand> toUpdateCommandList(List<MenuUpdateRequest> updateRequests) {
-    if (updateRequests == null) {
-      return null;
+        List<MenuDeleteCommand> list = new ArrayList<MenuDeleteCommand>( deleteRequests.size() );
+        for ( MenuDeleteRequest menuDeleteRequest : deleteRequests ) {
+            list.add( menuDeleteRequestToMenuDeleteCommand( menuDeleteRequest ) );
+        }
+
+        return list;
     }
 
-    List<MenuUpdateCommand> list = new ArrayList<MenuUpdateCommand>(updateRequests.size());
-    for (MenuUpdateRequest menuUpdateRequest : updateRequests) {
-      list.add(toUpdateCommand(menuUpdateRequest));
+    @Override
+    public MenuSaveCommand toSaveCommand(MenuCreateRequest createRequest) {
+        if ( createRequest == null ) {
+            return null;
+        }
+
+        MenuSaveCommand menuSaveCommand = new MenuSaveCommand();
+
+        menuSaveCommand.setName( createRequest.name() );
+        menuSaveCommand.setCode( createRequest.code() );
+        menuSaveCommand.setRoleCode( createRequest.roleCode() );
+
+        return menuSaveCommand;
     }
 
-    return list;
-  }
+    @Override
+    public MenuUpdateCommand toUpdateCommand(MenuUpdateRequest updateRequest) {
+        if ( updateRequest == null ) {
+            return null;
+        }
 
-  @Override
-  public List<MenuDeleteCommand> toDeleteCommandList(List<MenuDeleteRequest> deleteRequests) {
-    if (deleteRequests == null) {
-      return null;
+        MenuUpdateCommand menuUpdateCommand = new MenuUpdateCommand();
+
+        menuUpdateCommand.setName( updateRequest.name() );
+        menuUpdateCommand.setCode( updateRequest.code() );
+        menuUpdateCommand.setRoleCode( updateRequest.roleCode() );
+        menuUpdateCommand.setId( updateRequest.id() );
+
+        return menuUpdateCommand;
     }
 
-    List<MenuDeleteCommand> list = new ArrayList<MenuDeleteCommand>(deleteRequests.size());
-    for (MenuDeleteRequest menuDeleteRequest : deleteRequests) {
-      list.add(menuDeleteRequestToMenuDeleteCommand(menuDeleteRequest));
+    protected MenuDeleteCommand menuDeleteRequestToMenuDeleteCommand(MenuDeleteRequest menuDeleteRequest) {
+        if ( menuDeleteRequest == null ) {
+            return null;
+        }
+
+        MenuDeleteCommand menuDeleteCommand = new MenuDeleteCommand();
+
+        menuDeleteCommand.setId( menuDeleteRequest.id() );
+
+        return menuDeleteCommand;
     }
-
-    return list;
-  }
-
-  @Override
-  public MenuSaveCommand toSaveCommand(MenuCreateRequest createRequest) {
-    if (createRequest == null) {
-      return null;
-    }
-
-    MenuSaveCommand menuSaveCommand = new MenuSaveCommand();
-
-    menuSaveCommand.setName(createRequest.name());
-    menuSaveCommand.setCode(createRequest.code());
-    menuSaveCommand.setRoleCode(createRequest.roleCode());
-
-    return menuSaveCommand;
-  }
-
-  @Override
-  public MenuUpdateCommand toUpdateCommand(MenuUpdateRequest updateRequest) {
-    if (updateRequest == null) {
-      return null;
-    }
-
-    MenuUpdateCommand menuUpdateCommand = new MenuUpdateCommand();
-
-    menuUpdateCommand.setName(updateRequest.name());
-    menuUpdateCommand.setCode(updateRequest.code());
-    menuUpdateCommand.setRoleCode(updateRequest.roleCode());
-    menuUpdateCommand.setId(updateRequest.id());
-
-    return menuUpdateCommand;
-  }
-
-  protected MenuDeleteCommand menuDeleteRequestToMenuDeleteCommand(
-      MenuDeleteRequest menuDeleteRequest) {
-    if (menuDeleteRequest == null) {
-      return null;
-    }
-
-    MenuDeleteCommand menuDeleteCommand = new MenuDeleteCommand();
-
-    menuDeleteCommand.setId(menuDeleteRequest.id());
-
-    return menuDeleteCommand;
-  }
 }

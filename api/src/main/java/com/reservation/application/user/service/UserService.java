@@ -4,10 +4,9 @@ import com.reservation.application.user.model.SignupCommand;
 import com.reservation.domain.User;
 import java.util.List;
 import java.util.Optional;
-import org.springframework.transaction.annotation.Transactional;
 
 public interface UserService {
-  @Transactional
+
   void registerUser(SignupCommand command);
 
   Optional<User> findByUsername(String username);
@@ -19,4 +18,12 @@ public interface UserService {
   void deleteUserByUserID(String userID);
 
   List<User> findAll();
+
+  /**
+   * 카카이 인증코드 -> 유저 인증 or 회원가입
+   *
+   * @param code 카카오 인증코드
+   * @return User 도메인
+   */
+  User findOrCreateKakaoUser(String code);
 }

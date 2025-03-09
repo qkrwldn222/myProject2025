@@ -21,7 +21,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/auth")
 @RequiredArgsConstructor
 @EnableGlobalExceptionHandling
 public class AuthController implements AuthSwagger {
@@ -40,6 +40,23 @@ public class AuthController implements AuthSwagger {
     userService.registerUser(command);
 
     return ResponseEntity.ok("가입이 완료되었습니다.");
+  }
+
+  /**
+   * https://kauth.kakao.com/oauth/authorize?client_id=YOUR_KAKAO_CLIENT_ID&redirect_uri=YOUR_REDIRECT_URI&response_type=code
+   *
+   * @param code 카카오 인증코드
+   * @return message : 요청이 완료되었습니다.
+   */
+  @Override
+  @PostMapping("/kakao/signup")
+  public ResponseEntity<?> registerUser(@RequestParam("code") String code) {
+    User user = userService.findOrCreateKakaoUser(code);
+
+    String jwt =
+        jwtProvider.createToken(user.getUsername(), user.getRole().getRoleType().getCode());
+
+    return ResponseEntity.ok(new JwtResponse(jwt));
   }
 
   @PostMapping("/login")
@@ -98,7 +115,6 @@ public class AuthController implements AuthSwagger {
         || !request.getUserID().equals(user.getUserID())) {
       throw new ApiException("아이디 또는 비밀번호가 일치하지 않습니다.");
     }
-
     // 유저 삭제
     userService.deleteUserByUserID(request.getUserID());
 

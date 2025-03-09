@@ -1,8 +1,10 @@
 package com.reservation.application.user.service;
 
 import com.reservation.application.user.model.SignupCommand;
+import com.reservation.application.user.repository.UserKakaoRepository;
 import com.reservation.common.config.ApiException;
 import com.reservation.common.enums.RoleType;
+import com.reservation.domain.KakaoUserInfo;
 import com.reservation.domain.Role;
 import com.reservation.domain.User;
 import com.reservation.infrastructure.role.repository.RoleJpaRepository;
@@ -26,6 +28,7 @@ public class UserRestService implements UserService {
 
   private final UserJpaRepository userRepository;
   private final RoleJpaRepository roleRepository;
+  private final UserKakaoRepository userKakaoRepository;
 
   public List<User> getAllUsers() {
     UserService proxyInstance = (UserService) AopContext.currentProxy(); // Spring 프록시 활용
@@ -87,5 +90,34 @@ public class UserRestService implements UserService {
   @Override
   public boolean existsByUsername(String username) {
     return userRepository.existsByUsername(username);
+  }
+
+  @Override
+  @Transactional
+  public User findOrCreateKakaoUser(String code) {
+    String kakaoAccessToken = userKakaoRepository.getKakaoAccessToken(code);
+
+    KakaoUserInfo kakaoUserInfo = userKakaoRepository.getKakaoUserInfo(kakaoAccessToken);
+
+    Optional<User> kakaoUser = userRepository.findByUserID(String.valueOf(kakaoUserInfo.getId()));
+    if (kakaoUser.isPresent()) {
+      return kakaoUser.get();
+    } else {
+      Role defaultRole =
+          roleRepository
+              .findByRoleType(RoleType.USER) // 기본 역할(사용자)
+              .orElseThrow(() -> new RuntimeException("기본 역할을 찾을 수 없습니다."));
+      return kakaoUser.orElseGet(
+          () -> {
+            User newUser =
+                User.builder()
+                    .username(kakaoUserInfo.getNickname())
+                    .userID(String.valueOf(kakaoUserInfo.getId()))
+                    .provider("kakao")
+                    .role(defaultRole)
+                    .build();
+            return userRepository.save(newUser);
+          });
+    }
   }
 }

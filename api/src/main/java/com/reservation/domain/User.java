@@ -21,8 +21,9 @@ public class User extends BaseEntity {
   @Column(nullable = false, name = "user_name")
   private String username;
 
-  @Column(nullable = false)
-  private String password;
+  @Column private String password;
+
+  @Column private String provider;
 
   @OneToOne
   @JoinColumn(name = "role_id")
