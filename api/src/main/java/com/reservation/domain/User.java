@@ -21,10 +21,19 @@ public class User extends BaseEntity {
   @Column(nullable = false, name = "user_name")
   private String username;
 
-  @Column(nullable = false)
-  private String password;
+  @Column private String email;
+
+  @Column private String phone;
+
+  @Column private String password;
+
+  @Column private String provider;
 
   @OneToOne
   @JoinColumn(name = "role_id")
   private Role role;
+
+  public void updatePassword(String newPassword) {
+    this.password = newPassword;
+  }
 }

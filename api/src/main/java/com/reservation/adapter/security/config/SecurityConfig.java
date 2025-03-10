@@ -47,14 +47,16 @@ public class SecurityConfig {
                   .permitAll();
 
               // 회원가입 & 로그인 허용
-              auth.requestMatchers("/api/auth/signup", "/api/auth/login").permitAll();
+              auth.requestMatchers(
+                      "/auth/signup", "/auth/login", "/auth/kakao/signup", "/auth/logout")
+                  .permitAll();
 
               // Local or dev 환경에서만 임시 토큰 발급 허용
               if (Arrays.asList(environment.getActiveProfiles()).contains("local")
                   || Arrays.asList(environment.getActiveProfiles()).contains("dev")) {
-                auth.requestMatchers("/api/auth/temp/token").permitAll();
+                auth.requestMatchers("/auth/temp/token").permitAll();
               } else {
-                auth.requestMatchers("/api/auth/temp/token").denyAll();
+                auth.requestMatchers("/auth/temp/token").denyAll();
               }
 
               auth.requestMatchers(

@@ -7,64 +7,66 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.processing.Generated;
 
-@Generated(value = "org.mapstruct.ap.MappingProcessor")
+@Generated(
+    value = "org.mapstruct.ap.MappingProcessor"
+)
 public class MenuResponseMapperImpl implements MenuResponseMapper {
 
-  @Override
-  public MenuSearchResponse toMenuSearchResponse(Menu menu) {
-    if (menu == null) {
-      return null;
+    @Override
+    public MenuSearchResponse toMenuSearchResponse(Menu menu) {
+        if ( menu == null ) {
+            return null;
+        }
+
+        MenuSearchResponse menuSearchResponse = new MenuSearchResponse();
+
+        menuSearchResponse.setRoleName( menuRoleName( menu ) );
+        menuSearchResponse.setRoleRank( menuRoleRank( menu ) );
+        menuSearchResponse.setId( menu.getId() );
+        menuSearchResponse.setName( menu.getName() );
+        menuSearchResponse.setCode( menu.getCode() );
+
+        return menuSearchResponse;
     }
 
-    MenuSearchResponse menuSearchResponse = new MenuSearchResponse();
+    @Override
+    public List<MenuSearchResponse> toMenuSearchResponses(List<Menu> menus) {
+        if ( menus == null ) {
+            return null;
+        }
 
-    menuSearchResponse.setRoleName(menuRoleName(menu));
-    menuSearchResponse.setRoleRank(menuRoleRank(menu));
-    menuSearchResponse.setId(menu.getId());
-    menuSearchResponse.setName(menu.getName());
-    menuSearchResponse.setCode(menu.getCode());
+        List<MenuSearchResponse> list = new ArrayList<MenuSearchResponse>( menus.size() );
+        for ( Menu menu : menus ) {
+            list.add( toMenuSearchResponse( menu ) );
+        }
 
-    return menuSearchResponse;
-  }
-
-  @Override
-  public List<MenuSearchResponse> toMenuSearchResponses(List<Menu> menus) {
-    if (menus == null) {
-      return null;
+        return list;
     }
 
-    List<MenuSearchResponse> list = new ArrayList<MenuSearchResponse>(menus.size());
-    for (Menu menu : menus) {
-      list.add(toMenuSearchResponse(menu));
+    private String menuRoleName(Menu menu) {
+        if ( menu == null ) {
+            return null;
+        }
+        Role role = menu.getRole();
+        if ( role == null ) {
+            return null;
+        }
+        String name = role.getName();
+        if ( name == null ) {
+            return null;
+        }
+        return name;
     }
 
-    return list;
-  }
-
-  private String menuRoleName(Menu menu) {
-    if (menu == null) {
-      return null;
+    private int menuRoleRank(Menu menu) {
+        if ( menu == null ) {
+            return 0;
+        }
+        Role role = menu.getRole();
+        if ( role == null ) {
+            return 0;
+        }
+        int rank = role.getRank();
+        return rank;
     }
-    Role role = menu.getRole();
-    if (role == null) {
-      return null;
-    }
-    String name = role.getName();
-    if (name == null) {
-      return null;
-    }
-    return name;
-  }
-
-  private int menuRoleRank(Menu menu) {
-    if (menu == null) {
-      return 0;
-    }
-    Role role = menu.getRole();
-    if (role == null) {
-      return 0;
-    }
-    int rank = role.getRank();
-    return rank;
-  }
 }
