@@ -21,6 +21,10 @@ public class User extends BaseEntity {
   @Column(nullable = false, name = "user_name")
   private String username;
 
+  @Column private String email;
+
+  @Column private String phone;
+
   @Column private String password;
 
   @Column private String provider;
@@ -28,4 +32,8 @@ public class User extends BaseEntity {
   @OneToOne
   @JoinColumn(name = "role_id")
   private Role role;
+
+  public void updatePassword(String newPassword) {
+    this.password = newPassword;
+  }
 }

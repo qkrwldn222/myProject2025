@@ -60,3 +60,18 @@ security:
   jwt:
     secret: "mySecretKeyForJwtTokenExample2025"
     expiration: 86400000 # 1일 (24시간)
+
+mail:
+  host: smtp.gmail.com
+  port: 587
+  username: ${EMAIL_USERNAME}  # 환경변수 사용
+  password: ${EMAIL_PASSWORD}  # 환경변수 사용
+  properties:
+    mail:
+      smtp :
+        auth: true
+        starttls:
+          enable: true
+  transport:
+    protocol: smtp
+  debug: true

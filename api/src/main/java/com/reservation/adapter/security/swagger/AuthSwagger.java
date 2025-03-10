@@ -1,9 +1,6 @@
 package com.reservation.adapter.security.swagger;
 
-import com.reservation.adapter.security.model.DeleteUserRequest;
-import com.reservation.adapter.security.model.JwtResponse;
-import com.reservation.adapter.security.model.LoginRequest;
-import com.reservation.adapter.security.model.SignupRequest;
+import com.reservation.adapter.security.model.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
@@ -78,4 +75,19 @@ public interface AuthSwagger {
   ResponseEntity<String> deleteUser(
       @RequestHeader("Authorization") String token,
       @RequestBody DeleteUserRequest deleteUserRequest);
+
+  @Operation(summary = "비밀번호 찾기 - 인증번호 요청", description = "이메일로 인증번호를 전송합니다.")
+  @PostMapping("/verify-request")
+  ResponseEntity<String> requestPasswordVerification(
+      @Parameter(description = "이메일", required = true) @RequestParam(name = "email") String email);
+
+  @Operation(
+      summary = "비밀번호 찾기 - 인증번호 검증",
+      description = "입력한 인증번호가 올바른지 확인하고, 인증되면 비밀번호 변경 토큰을 발급합니다.")
+  @PostMapping("/verify")
+  ResponseEntity<String> verifyCode(@RequestBody PasswordVerifyRequest request);
+
+  @Operation(summary = "비밀번호 변경", description = "발급받은 토큰을 사용하여 비밀번호를 변경합니다.")
+  @PostMapping("/reset")
+  ResponseEntity<String> resetPassword(@RequestBody PasswordResetRequest request);
 }

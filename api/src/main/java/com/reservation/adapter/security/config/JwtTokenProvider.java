@@ -150,4 +150,20 @@ public class JwtTokenProvider {
 
     return newJwt;
   }
+
+  public void revokeTokenByUser(String username) {
+    Set<String> keys = redisTemplate.keys("*"); // Redis에 저장된 모든 키 가져오기
+    if (keys != null) {
+      for (String token : keys) {
+        try {
+          String storedUsername = getUsernameFromToken(token);
+          if (username.equals(storedUsername)) {
+            redisTemplate.delete(token); // 해당 사용자 토큰 삭제
+          }
+        } catch (Exception ignored) {
+          // 유효하지 않은 토큰이면 무시
+        }
+      }
+    }
+  }
 }

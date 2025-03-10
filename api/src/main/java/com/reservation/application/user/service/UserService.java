@@ -26,4 +26,28 @@ public interface UserService {
    * @return User 도메인
    */
   User findOrCreateKakaoUser(String code);
+
+  /**
+   * 메일로 인증번호 전송
+   *
+   * @param email 이메일
+   */
+  void requestVerification(String email);
+
+  /**
+   * 인증번호 검증 및 비밀번호 변경 토큰 발급
+   *
+   * @param email 이메일
+   * @param verificationCode 인증코드
+   * @return String 비밀번호 변경토큰
+   */
+  String verifyCode(String email, String verificationCode);
+
+  /**
+   * 비밀번호 변경
+   *
+   * @param resetToken 비밀번호 변경토큰
+   * @param newPassword 신규 비밀번호
+   */
+  User resetPassword(String resetToken, String newPassword);
 }
