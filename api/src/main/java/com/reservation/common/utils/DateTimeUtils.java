@@ -2,6 +2,7 @@ package com.reservation.common.utils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Map;
@@ -62,6 +63,18 @@ public class DateTimeUtils {
   public static String formatDate(LocalDate date, String format) {
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format);
     return date.format(formatter);
+  }
+
+  public static LocalDateTime toLocalDateTime(String dateStr) {
+    return parseDateTime(dateStr, DEFAULT_DATE_TIME_FORMAT);
+  }
+
+  public static LocalDateTime toLocalDateTime(String dateStr, String format) {
+     return parseDateTime(dateStr, format);
+  }
+
+  public static LocalDateTime toLocalDateTime(LocalDate localDate, LocalTime localTime) {
+    return LocalDateTime.of(localDate, localTime);
   }
 
   public static LocalDate safeParseDate(String dateStr) {

@@ -63,6 +63,11 @@ public class UserRestService implements UserService {
     return getAllUsers().stream().filter(data -> data.getUserID().equals(userId)).findFirst();
   }
 
+  @Override
+  public Optional<User> findById(Long userId) {
+    return getAllUsers().stream().filter(data -> data.getId().equals(userId)).findFirst();
+  }
+
   @Transactional
   public void registerUser(SignupCommand command) {
     command.validate();

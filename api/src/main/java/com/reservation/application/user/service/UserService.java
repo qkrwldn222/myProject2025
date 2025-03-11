@@ -13,6 +13,8 @@ public interface UserService {
 
   Optional<User> findByUserId(String userId);
 
+  Optional<User> findById(Long userId);
+
   boolean existsByUsername(String username);
 
   void deleteUserByUserID(String userID);

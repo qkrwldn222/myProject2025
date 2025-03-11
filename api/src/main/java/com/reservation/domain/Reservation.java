@@ -3,8 +3,10 @@ package com.reservation.domain;
 import com.reservation.common.enums.ReservationStatus;
 import jakarta.persistence.*;
 import lombok.*;
+import org.checkerframework.checker.units.qual.C;
 import org.hibernate.annotations.CreationTimestamp;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -48,6 +50,14 @@ public class Reservation {
     @Column(name = "expires_at")
     private LocalDateTime expiresAt;
 
+    @Column(name = "deposit_amount")
+    private BigDecimal depositAmount;
+
+    @Column(name = "payment_key")
+    private String paymentKey;
+
+    @Column(name = "order_id")
+    private String orderId;
 
     @Column(name = "reservation_at", updatable = false)
     @CreationTimestamp

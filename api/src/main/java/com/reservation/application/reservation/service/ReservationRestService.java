@@ -1,20 +1,20 @@
 package com.reservation.application.reservation.service;
 
+import com.reservation.application.payment.service.PaymentService;
+import com.reservation.application.refund.service.RefundService;
 import com.reservation.application.reservation.model.ReservationRequestCommand;
+import com.reservation.application.user.service.UserService;
 import com.reservation.common.config.ApiException;
 import com.reservation.common.enums.ReservationOpenType;
 import com.reservation.common.enums.ReservationStatus;
 import com.reservation.common.enums.RoleType;
 import com.reservation.common.utils.DateTimeUtils;
 import com.reservation.common.utils.JsonUtils;
-import com.reservation.domain.Reservation;
-import com.reservation.domain.Restaurant;
-import com.reservation.domain.RestaurantSeat;
-import com.reservation.domain.User;
+import com.reservation.domain.*;
+import com.reservation.infrastructure.payment.model.TossPaymentResponse;
 import com.reservation.infrastructure.reservation.repository.ReservationJpaRepository;
 import com.reservation.infrastructure.restaurant.restaurant.repository.RestaurantJpaRepository;
 import com.reservation.infrastructure.restaurant.seat.RestaurantSeatJpaRepository;
-import com.reservation.infrastructure.user.repository.UserJpaRepository;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,11 +25,11 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -43,10 +43,10 @@ public class ReservationRestService implements ReservationService {
 
     private final ReservationJpaRepository reservationRepository;
     private final RestaurantJpaRepository restaurantRepository;
-    private final UserJpaRepository userRepository;
+    private final UserService userService;
     private final RestaurantSeatJpaRepository seatRepository;
-
-
+    private final RefundService refundService;
+    private final PaymentService paymentService;
 
 
     @Override
@@ -57,6 +57,21 @@ public class ReservationRestService implements ReservationService {
 
         if (reservation.getStatus().equals(ReservationStatus.CANCELED)) {
             throw new ApiException("이미 취소된 예약입니다.");
+        }
+
+
+        //예약 시간이 지난 경우 취소 불가
+        if (DateTimeUtils.toLocalDateTime(reservation.getReservationDate(), reservation.getReservationTime()).isBefore(LocalDateTime.now())) {
+            throw new ApiException("이미 지난 예약은 취소할 수 없습니다.");
+        }
+
+        //예약금 환불 처리 (환불 정책 적용)
+        if (reservation.getDepositAmount() != null && reservation.getDepositAmount().compareTo(BigDecimal.ZERO) > 0) {
+            BigDecimal refundAmount = calculateRefundAmount(reservation);
+
+            if (refundAmount.compareTo(BigDecimal.ZERO) > 0) {
+                paymentService.refundPayment(reservation.getPaymentKey(), reservation.getDepositAmount(), refundAmount);
+            }
         }
 
         reservation.setStatus(ReservationStatus.CANCELED);
@@ -100,11 +115,11 @@ public class ReservationRestService implements ReservationService {
     }
 
     @Transactional
-    public void confirmReservation(Long reservationId, Long userId) {
+    public void confirmReservation(Long reservationId, Long userId , boolean autoConfirm) {
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new ApiException("예약을 찾을 수 없습니다."));
 
-        User user = userRepository.findById(userId)
+        User user = userService.findById(userId)
                 .orElseThrow(() -> new ApiException("사용자를 찾을 수 없습니다."));
 
         Restaurant restaurant = reservation.getRestaurant();
@@ -118,17 +133,33 @@ public class ReservationRestService implements ReservationService {
             throw new ApiException("이미 처리된 예약입니다.");
         }
 
+        // 예약금이 있는 경우 → 결제 완료 확인 필요
+        if (reservation.getDepositAmount() != null && reservation.getDepositAmount().compareTo(BigDecimal.ZERO) > 0) {
+            if (reservation.getPaymentKey() == null) {
+                throw new ApiException("예약금 결제가 완료되지 않았습니다.");
+            }
+        }
+
+        // 승인 대기 시간이 초과 시 자동 취소
+        LocalDateTime now = LocalDateTime.now();
+
+        if (now.isAfter(reservation.getExpiresAt())) {
+            reservation.setStatus(ReservationStatus.CANCELED);
+            reservationRepository.save(reservation);
+            throw new ApiException("승인 대기 시간이 초과되어 예약이 자동 취소되었습니다.");
+        }
+
         reservation.setStatus(ReservationStatus.CONFIRMED);
         reservation.setExpiresAt(null); // 승인 제한 시간 제거
         reservationRepository.save(reservation);
     }
 
-    private Reservation saveReservation(ReservationRequestCommand command) {
 
+    private Reservation saveReservation(ReservationRequestCommand command) {
         Restaurant restaurant = restaurantRepository.findById(command.getRestaurantId())
                 .orElseThrow(() -> new ApiException("레스토랑을 찾을 수 없습니다."));
 
-        User user = userRepository.findById(command.getUserId())
+        User user = userService.findById(command.getUserId())
                 .orElseThrow(() -> new ApiException("사용자를 찾을 수 없습니다."));
 
         RestaurantSeat seat = seatRepository.findById(command.getSeatId())
@@ -148,13 +179,28 @@ public class ReservationRestService implements ReservationService {
             throw new ApiException("해당 좌석은 사용 불가능합니다.");
         }
 
+        // 선약금이 있는 경우 결제 먼저 수행
+        BigDecimal depositAmount = restaurant.getDepositAmount();
+
+        TossPaymentResponse requestPayment = null;
+        if (depositAmount != null && depositAmount.compareTo(BigDecimal.ZERO) > 0) {
+            Optional<User> User = userService.findById(command.getUserId());
+            requestPayment = (TossPaymentResponse) paymentService.requestPayment(depositAmount, User.get().getUsername());
+            if (!StringUtils.hasText(requestPayment.getPaymentKey())) {
+                throw new ApiException("예약금 결제 실패");
+            }
+        }
+
         Reservation reservation = Reservation.builder()
                 .restaurant(restaurant)
                 .user(user)
                 .seat(seat)
                 .reservationDate(command.getReservationDate())
                 .reservationTime(command.getReservationTime())
-                .status(restaurant.getAutoConfirm() ? ReservationStatus.CONFIRMED : ReservationStatus.PENDING)
+                .status(restaurant.getAutoConfirm()  && depositAmount.equals(BigDecimal.ZERO) ? ReservationStatus.CONFIRMED : ReservationStatus.PENDING)
+                .depositAmount(restaurant.getDepositAmount().equals(BigDecimal.ZERO) ? BigDecimal.ZERO : restaurant.getDepositAmount())
+                .paymentKey(StringUtils.hasText(requestPayment.getPaymentKey()) ? requestPayment.getPaymentKey() : UUID.randomUUID().toString())
+                .orderId(StringUtils.hasText(requestPayment.getOrderId()) ? requestPayment.getOrderId() : null)
                 .expiresAt(restaurant.getAutoConfirm() ? null :
                         LocalDateTime.now().plusMinutes(restaurant.getApprovalTimeout())) // 승인 제한 시간 설정
                 .build();
@@ -187,7 +233,6 @@ public class ReservationRestService implements ReservationService {
         if (!StringUtils.hasText(restaurant.getReservationOpenDays())) return true;
 
         List<String> openDays = JsonUtils.fromJsonToList(restaurant.getReservationOpenDays());
-
         if (restaurant.getReservationOpenType() == ReservationOpenType.ANYTIME) {
             return true;
         } else if (restaurant.getReservationOpenType() == ReservationOpenType.WEEKLY) {
@@ -206,9 +251,34 @@ public class ReservationRestService implements ReservationService {
      */
     private boolean isReservationAllowed(Restaurant restaurant, LocalDate reservationDate) {
         if (!StringUtils.hasText(restaurant.getReservationAvailableDays())) return true;
-
         // JSON → Map 변환 후, 날짜 비교 수행
         Map<String, String> dateConfig = JsonUtils.parseJsonToMap(restaurant.getReservationAvailableDays());
         return DateTimeUtils.isDateWithinAvailableRange(dateConfig, reservationDate);
+    }
+
+    /**
+     * 환불금액 계산
+     * @param reservation 예약 도메인
+     * @return 환불금액
+     */
+    private BigDecimal calculateRefundAmount(Reservation reservation) {
+        if (reservation.getDepositAmount() == null || reservation.getDepositAmount().compareTo(BigDecimal.ZERO) == 0) {
+            return BigDecimal.ZERO; //예약금이 없는 경우 환불 없음
+        }
+
+        List<RefundPolicy> policies = refundService.findByRestaurantId(reservation.getRestaurant().getId());
+        long daysBefore = ChronoUnit.DAYS.between(LocalDate.now(), reservation.getReservationDate());
+
+        // 예약 가능일 기준 가장 유리한 환불 정책 조회
+        Optional<RefundPolicy> applicablePolicy = policies.stream()
+                .filter(policy -> daysBefore >= policy.getDaysBefore())
+                .max(Comparator.comparingInt(RefundPolicy::getDaysBefore));
+
+        if (applicablePolicy.isPresent()) {
+            BigDecimal refundPercentage = applicablePolicy.get().getRefundPercentage().divide(BigDecimal.valueOf(100));
+            return reservation.getDepositAmount().multiply(refundPercentage);
+        }
+
+        return BigDecimal.ZERO; // 환불 정책이 없으면 환불 없음
     }
 }

@@ -9,6 +9,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 
 @Entity
 @Table(name = "service.restaurant")
@@ -56,6 +58,9 @@ public class Restaurant extends BaseEntity {
     @Lob
     @Column(name = "reservation_available_days", columnDefinition = "TEXT DEFAULT NULL")
     private String reservationAvailableDays; // 예약 가능한 날짜 범위 (JSON)
+
+    @Column(name = "deposit_amount")
+    private BigDecimal depositAmount;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
