@@ -75,3 +75,6 @@ mail:
   transport:
     protocol: smtp
   debug: true
+
+file:
+  upload-dir : C:\image

@@ -2,7 +2,7 @@ package com.reservation.application.user.service;
 
 import com.reservation.application.user.model.SignupCommand;
 import com.reservation.application.user.repository.UserKakaoRepository;
-import com.reservation.common.EmailService.EmailService;
+import com.reservation.common.service.EmailService;
 import com.reservation.common.config.ApiException;
 import com.reservation.common.enums.RoleType;
 import com.reservation.domain.KakaoUserInfo;

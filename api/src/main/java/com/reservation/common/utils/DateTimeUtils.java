@@ -4,6 +4,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.Map;
+
 import org.slf4j.Logger;
 import org.springframework.util.StringUtils;
 
@@ -88,5 +90,26 @@ public class DateTimeUtils {
       logger.warn("Invalid date format: '{}' - Unable to parse", dateStr);
     }
     return null; // 변환 실패 시 null 반환
+  }
+
+  /** 특정 날짜가 예약 가능 범위에 포함되는지 검증 */
+  public static boolean isDateWithinAvailableRange(Map<String, String> dateConfig, LocalDate targetDate) {
+    if (dateConfig == null || dateConfig.isEmpty()) return true;
+
+    String type = dateConfig.get("type");
+
+    if ("DAYS_AFTER".equals(type)) {
+      int daysAfter = Integer.parseInt(dateConfig.get("days"));
+      LocalDate startDate = LocalDate.now();
+      LocalDate endDate = startDate.plusDays(daysAfter);
+      return !targetDate.isBefore(startDate) && !targetDate.isAfter(endDate);
+    }
+    else if ("FIXED_RANGE".equals(type)) {
+      LocalDate startDate = parseDate(dateConfig.get("start_date"));
+      LocalDate endDate = parseDate(dateConfig.get("end_date"));
+      return !targetDate.isBefore(startDate) && !targetDate.isAfter(endDate);
+    }
+
+    return false;
   }
 }

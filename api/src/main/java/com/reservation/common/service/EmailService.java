@@ -1,4 +1,4 @@
-package com.reservation.common.EmailService;
+package com.reservation.common.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
