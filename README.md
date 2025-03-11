@@ -76,3 +76,6 @@
 - **사용자 시나리오 문서**: 예약, 대기, 결제 흐름을 상세 정의한 플로우 차트
 - **데이터 모델 정의서**: MySQL 테이블 및 관계 정의 (ERD 포함)
 - **배포 가이드**: Jenkins + Docker 배포과정 문서화
+  
+## 5. 데이터 베이스
+https://github.com/users/qkrwldn222/projects/1/views/3?pane=issue&itemId=101279944&issue=qkrwldn222%7CmyProject2025%7C16
