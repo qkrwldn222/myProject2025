@@ -16,4 +16,6 @@ public interface CodeService {
   void saveGroupCode(GroupCodeSaveCommand command);
 
   void updateGroupCode(GroupCodeUpdateCommand command);
+
+  void clearMenuCache();
 }

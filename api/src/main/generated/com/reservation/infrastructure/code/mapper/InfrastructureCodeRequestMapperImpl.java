@@ -6,56 +6,58 @@ import com.reservation.application.code.model.GroupCodeUpdateCommand;
 import com.reservation.infrastructure.code.model.GroupCodeDTO;
 import javax.annotation.processing.Generated;
 
-@Generated(value = "org.mapstruct.ap.MappingProcessor")
+@Generated(
+    value = "org.mapstruct.ap.MappingProcessor"
+)
 public class InfrastructureCodeRequestMapperImpl implements InfrastructureCodeRequestMapper {
 
-  @Override
-  public GroupCodeDTO toGroupCodeDTO(GroupCodeSearchCommand command) {
-    if (command == null) {
-      return null;
+    @Override
+    public GroupCodeDTO toGroupCodeDTO(GroupCodeSearchCommand command) {
+        if ( command == null ) {
+            return null;
+        }
+
+        GroupCodeDTO groupCodeDTO = new GroupCodeDTO();
+
+        groupCodeDTO.setGroupCode( command.getGroupCode() );
+        groupCodeDTO.setUseYn( command.getUseYn() );
+
+        return groupCodeDTO;
     }
 
-    GroupCodeDTO groupCodeDTO = new GroupCodeDTO();
+    @Override
+    public GroupCodeDTO toGroupCodeDTO(GroupCodeSaveCommand command) {
+        if ( command == null ) {
+            return null;
+        }
 
-    groupCodeDTO.setGroupCode(command.getGroupCode());
-    groupCodeDTO.setUseYn(command.getUseYn());
+        GroupCodeDTO groupCodeDTO = new GroupCodeDTO();
 
-    return groupCodeDTO;
-  }
+        groupCodeDTO.setGroupCode( command.getGroupCode() );
+        groupCodeDTO.setUseYn( command.getUseYn() );
+        groupCodeDTO.setDescription( command.getDescription() );
 
-  @Override
-  public GroupCodeDTO toGroupCodeDTO(GroupCodeSaveCommand command) {
-    if (command == null) {
-      return null;
+        groupCodeDTO.setCreateBy( getCurrentUsername() );
+        groupCodeDTO.setUpdateBy( getCurrentUsername() );
+
+        return groupCodeDTO;
     }
 
-    GroupCodeDTO groupCodeDTO = new GroupCodeDTO();
+    @Override
+    public GroupCodeDTO toGroupCodeDTO(GroupCodeUpdateCommand command) {
+        if ( command == null ) {
+            return null;
+        }
 
-    groupCodeDTO.setGroupCode(command.getGroupCode());
-    groupCodeDTO.setUseYn(command.getUseYn());
-    groupCodeDTO.setDescription(command.getDescription());
+        GroupCodeDTO groupCodeDTO = new GroupCodeDTO();
 
-    groupCodeDTO.setCreateBy(getCurrentUsername());
-    groupCodeDTO.setUpdateBy(getCurrentUsername());
+        groupCodeDTO.setId( command.getId() );
+        groupCodeDTO.setUseYn( command.getUseYn() );
+        groupCodeDTO.setDescription( command.getDescription() );
 
-    return groupCodeDTO;
-  }
+        groupCodeDTO.setUpdateBy( getCurrentUsername() );
+        groupCodeDTO.setCreateBy( getCurrentUsername() );
 
-  @Override
-  public GroupCodeDTO toGroupCodeDTO(GroupCodeUpdateCommand command) {
-    if (command == null) {
-      return null;
+        return groupCodeDTO;
     }
-
-    GroupCodeDTO groupCodeDTO = new GroupCodeDTO();
-
-    groupCodeDTO.setId(command.getId());
-    groupCodeDTO.setUseYn(command.getUseYn());
-    groupCodeDTO.setDescription(command.getDescription());
-
-    groupCodeDTO.setUpdateBy(getCurrentUsername());
-    groupCodeDTO.setCreateBy(getCurrentUsername());
-
-    return groupCodeDTO;
-  }
 }

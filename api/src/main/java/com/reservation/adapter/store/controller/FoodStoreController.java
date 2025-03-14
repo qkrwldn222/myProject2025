@@ -6,8 +6,9 @@ import com.reservation.adapter.store.model.FoodStoreSearchResponse;
 import com.reservation.adapter.store.swagger.FoodStoreSwagger;
 import com.reservation.application.store.model.FoodStoreSearchCommand;
 import com.reservation.application.store.service.FoodStoreService;
-import com.reservation.common.ApiResponse;
 import com.reservation.common.config.EnableGlobalExceptionHandling;
+import com.reservation.common.response.ApiListResponse;
+import com.reservation.common.response.ApiResponseWrapper;
 import com.reservation.domain.FoodStore;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +25,7 @@ public class FoodStoreController implements FoodStoreSwagger {
 
   @Override
   @GetMapping("/all-food")
-  public ResponseEntity<ApiResponse<List<FoodStoreSearchResponse>>> getAllFoodStores(
+  public ResponseEntity<ApiListResponse<FoodStoreSearchResponse>> getAllFoodStores(
       @RequestParam(value = "mgtNo", required = false) String mgtNo,
       @RequestParam(value = "bplcNm", required = false) String bplcNm,
       @RequestParam(value = "rdnWhlAddr", required = false) String rdnWhlAddr,
@@ -39,13 +40,13 @@ public class FoodStoreController implements FoodStoreSwagger {
     List<FoodStoreSearchResponse> result =
         FoodStoreResponseMapper.INSTANCE.toFoodStoreSearchResponses(foodStores);
 
-    return ResponseEntity.ok(ApiResponse.success(result));
+    return ResponseEntity.ok(ApiListResponse.multiResult("SUCCESS", result));
   }
 
   @Override
   @PostMapping("sync-food")
-  public ResponseEntity<?> syncFoodStores() {
+  public ResponseEntity<ApiResponseWrapper<Void>> syncFoodStores() {
     foodStoreService.foodBulkInsert();
-    return ResponseEntity.ok("foodStore sync successfully!");
+    return ResponseEntity.ok(ApiResponseWrapper.actionResult("동기화가 완료되었습니다."));
   }
 }

@@ -23,7 +23,8 @@ public class User extends BaseEntity {
 
   @Column private String email;
 
-  @Column private String phone;
+  @Column(name = "cell_phone")
+  private String cellPhone;
 
   @Column private String password;
 

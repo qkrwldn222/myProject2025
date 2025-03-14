@@ -2,8 +2,10 @@ package com.reservation.common.utils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.springframework.util.StringUtils;
 
@@ -62,6 +64,18 @@ public class DateTimeUtils {
     return date.format(formatter);
   }
 
+  public static LocalDateTime toLocalDateTime(String dateStr) {
+    return parseDateTime(dateStr, DEFAULT_DATE_TIME_FORMAT);
+  }
+
+  public static LocalDateTime toLocalDateTime(String dateStr, String format) {
+    return parseDateTime(dateStr, format);
+  }
+
+  public static LocalDateTime toLocalDateTime(LocalDate localDate, LocalTime localTime) {
+    return LocalDateTime.of(localDate, localTime);
+  }
+
   public static LocalDate safeParseDate(String dateStr) {
     if (!StringUtils.hasText(dateStr)) { // 빈 값이면 null 반환
       return null;
@@ -88,5 +102,26 @@ public class DateTimeUtils {
       logger.warn("Invalid date format: '{}' - Unable to parse", dateStr);
     }
     return null; // 변환 실패 시 null 반환
+  }
+
+  /** 특정 날짜가 예약 가능 범위에 포함되는지 검증 */
+  public static boolean isDateWithinAvailableRange(
+      Map<String, String> dateConfig, LocalDate targetDate) {
+    if (dateConfig == null || dateConfig.isEmpty()) return true;
+
+    String type = dateConfig.get("type");
+
+    if ("DAYS_AFTER".equals(type)) {
+      int daysAfter = Integer.parseInt(dateConfig.get("days"));
+      LocalDate startDate = LocalDate.now();
+      LocalDate endDate = startDate.plusDays(daysAfter);
+      return !targetDate.isBefore(startDate) && !targetDate.isAfter(endDate);
+    } else if ("FIXED_RANGE".equals(type)) {
+      LocalDate startDate = parseDate(dateConfig.get("start_date"));
+      LocalDate endDate = parseDate(dateConfig.get("end_date"));
+      return !targetDate.isBefore(startDate) && !targetDate.isAfter(endDate);
+    }
+
+    return false;
   }
 }

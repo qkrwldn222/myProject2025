@@ -8,8 +8,9 @@ import com.reservation.adapter.menu.swagger.MenuSwagger;
 import com.reservation.application.menu.model.MenuOperateCommand;
 import com.reservation.application.menu.model.MenuSearchCommand;
 import com.reservation.application.menu.service.MenuService;
-import com.reservation.common.ApiResponse;
 import com.reservation.common.config.EnableGlobalExceptionHandling;
+import com.reservation.common.response.ApiListResponse;
+import com.reservation.common.response.ApiResponseWrapper;
 import com.reservation.domain.Menu;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +27,7 @@ public class MenuController implements MenuSwagger {
 
   @GetMapping("/search")
   @Override
-  public ResponseEntity<ApiResponse<List<MenuSearchResponse>>> search(
+  public ResponseEntity<ApiListResponse<MenuSearchResponse>> search(
       @RequestParam(value = "name", required = false) String name,
       @RequestParam(value = "code", required = false) String code,
       @RequestParam(value = "roleName", required = false) String roleName) {
@@ -37,16 +38,16 @@ public class MenuController implements MenuSwagger {
 
     List<MenuSearchResponse> result = MenuResponseMapper.INSTANCE.toMenuSearchResponses(menus);
 
-    return ResponseEntity.ok(ApiResponse.success(result));
+    return ResponseEntity.ok(ApiListResponse.multiResult("메뉴 조회 성공", result));
   }
 
   @Override
   @PostMapping("/operate")
-  public ResponseEntity<ApiResponse<?>> operateMenu(MenuOperateRequest request) {
+  public ResponseEntity<ApiResponseWrapper<Void>> operateMenu(MenuOperateRequest request) {
     MenuOperateCommand operateCommand = MenuRequestMapper.INSTANCE.toOperateCommand(request);
 
     menuService.operateMenu(operateCommand);
 
-    return ResponseEntity.ok(ApiResponse.success("요청이 완료되었습니다."));
+    return ResponseEntity.ok(ApiResponseWrapper.actionResult("메뉴 저장이 완료되었습니다."));
   }
 }

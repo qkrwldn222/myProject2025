@@ -13,6 +13,8 @@ public interface UserService {
 
   Optional<User> findByUserId(String userId);
 
+  Optional<User> findById(Long userId);
+
   boolean existsByUsername(String username);
 
   void deleteUserByUserID(String userID);
@@ -50,4 +52,16 @@ public interface UserService {
    * @param newPassword 신규 비밀번호
    */
   User resetPassword(String resetToken, String newPassword);
+
+  /**
+   * 유저 권한이 가게 운영자인지 검증
+   *
+   * @param userId 유저 id
+   * @return boolean
+   */
+  boolean isOwner(Long userId);
+
+  boolean isAdmin(Long userId);
+
+  boolean isAdmin();
 }

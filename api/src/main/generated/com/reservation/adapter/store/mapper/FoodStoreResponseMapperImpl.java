@@ -6,38 +6,40 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.processing.Generated;
 
-@Generated(value = "org.mapstruct.ap.MappingProcessor")
+@Generated(
+    value = "org.mapstruct.ap.MappingProcessor"
+)
 public class FoodStoreResponseMapperImpl implements FoodStoreResponseMapper {
 
-  @Override
-  public FoodStoreSearchResponse toFoodStoreSearchResponse(FoodStore foodStore) {
-    if (foodStore == null) {
-      return null;
+    @Override
+    public FoodStoreSearchResponse toFoodStoreSearchResponse(FoodStore foodStore) {
+        if ( foodStore == null ) {
+            return null;
+        }
+
+        FoodStoreSearchResponse foodStoreSearchResponse = new FoodStoreSearchResponse();
+
+        foodStoreSearchResponse.setHomePage( foodStore.getHomePage() );
+        foodStoreSearchResponse.setBplcNm( foodStore.getBplcNm() );
+        foodStoreSearchResponse.setRdnWhlAddr( foodStore.getRdnWhlAddr() );
+        foodStoreSearchResponse.setRdnPostNo( foodStore.getRdnPostNo() );
+        foodStoreSearchResponse.setSiteTel( foodStore.getSiteTel() );
+        foodStoreSearchResponse.setMgtNo( foodStore.getMgtNo() );
+
+        return foodStoreSearchResponse;
     }
 
-    FoodStoreSearchResponse foodStoreSearchResponse = new FoodStoreSearchResponse();
+    @Override
+    public List<FoodStoreSearchResponse> toFoodStoreSearchResponses(List<FoodStore> foodStore) {
+        if ( foodStore == null ) {
+            return null;
+        }
 
-    foodStoreSearchResponse.setHomePage(foodStore.getHomePage());
-    foodStoreSearchResponse.setBplcNm(foodStore.getBplcNm());
-    foodStoreSearchResponse.setRdnWhlAddr(foodStore.getRdnWhlAddr());
-    foodStoreSearchResponse.setRdnPostNo(foodStore.getRdnPostNo());
-    foodStoreSearchResponse.setSiteTel(foodStore.getSiteTel());
-    foodStoreSearchResponse.setMgtNo(foodStore.getMgtNo());
+        List<FoodStoreSearchResponse> list = new ArrayList<FoodStoreSearchResponse>( foodStore.size() );
+        for ( FoodStore foodStore1 : foodStore ) {
+            list.add( toFoodStoreSearchResponse( foodStore1 ) );
+        }
 
-    return foodStoreSearchResponse;
-  }
-
-  @Override
-  public List<FoodStoreSearchResponse> toFoodStoreSearchResponses(List<FoodStore> foodStore) {
-    if (foodStore == null) {
-      return null;
+        return list;
     }
-
-    List<FoodStoreSearchResponse> list = new ArrayList<FoodStoreSearchResponse>(foodStore.size());
-    for (FoodStore foodStore1 : foodStore) {
-      list.add(toFoodStoreSearchResponse(foodStore1));
-    }
-
-    return list;
-  }
 }

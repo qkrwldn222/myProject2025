@@ -166,4 +166,28 @@ public class JwtTokenProvider {
       }
     }
   }
+
+  public void clearAllJwtTokens() {
+    Set<String> keys = redisTemplate.keys("*");
+    if (keys != null) {
+      for (String token : keys) {
+        try {
+          // 토큰인지 확인 후 삭제
+          if (getUsernameFromToken(token) != null) {
+            redisTemplate.delete(token);
+          }
+        } catch (Exception ignored) {
+          // 유효하지 않은 토큰이면 무시
+        }
+      }
+    }
+  }
+
+  public void clearAllReservationLocks() {
+    Set<String> keys = redisTemplate.keys("reservation:*"); // 예약 관련된 키만 삭제
+    keys.addAll(redisTemplate.keys("user-reservation:*"));
+    if (keys != null) {
+      redisTemplate.delete(keys);
+    }
+  }
 }

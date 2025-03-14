@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.reservation.infrastructure.restaurant.restaurant.mybatis.RestaurantMybatisRepository">
+
+    <select id="searchRegistrations" resultType="com.reservation.infrastructure.restaurant.restaurant.model.RestaurantRegistrationDTO">
+        /** searchRegistrations 가게 등록 기본 정보 조회  **/
+        SELECT
+            r.restaurant_id AS restaurantId,
+            r.name AS name,
+            r.status AS status,
+            r.management_status AS managementStatus,
+            r.category,
+            r.phone_number as phoneNumber,
+            r.reservation_available_days as reservationAvailableDays,
+            r.reservation_open_type as reservationOpenType,
+            r.reservation_open_days as reservationOpenDays,
+            r.address,
+            r.special_booking_days as specialBookingDays,
+            r.owner_id as ownerId
+        FROM service.restaurant_registration t
+        INNER JOIN service.restaurant r ON r.restaurant_id = t.restaurant_id
+        <where>
+            <if test="command != null">
+                <if test="command.userId != null">
+                    AND r.owner_id = #{command.userId}
+                </if>
+                <if test="command.name != null">
+                    AND r.name LIKE CONCAT('%', #{command.name}, '%')
+                </if>
+                <if test="command.status != null">
+                    AND r.status = #{command.status}
+                </if>
+                <if test="command.managementStatus != null">
+                    AND r.management_status = #{command.managementStatus}
+                </if>
+            </if>
+        </where>
+    </select>
+
+    <select id="findMenusByRestaurantIds" resultType="com.reservation.infrastructure.restaurant.restaurant.model.RestaurantMenuDTO">
+        /**  findMenusByRestaurantIds , 가게 메뉴 조회  **/
+        SELECT
+            menu_id AS menuId,
+            restaurant_id AS restaurantId,
+            name,
+            description,
+            price,
+            image_url AS imageUrl,
+            is_best AS isBest
+        FROM service.restaurant_menu
+        <where>
+            restaurant_id in
+            <foreach item="id" collection="command" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        </where>
+    </select>
+
+    <select id="findOperatingHoursByRestaurantIds" resultType="com.reservation.infrastructure.restaurant.restaurant.model.RestaurantOperatingHoursDTO">
+        /**  findOperatingHoursByRestaurantIds , 운영 시간 목록 조회  **/
+        SELECT
+            operating_id AS operatingHoursId,
+            restaurant_id AS restaurantId,
+            day_of_week AS dayOfWeek,
+            open_time AS openTime,
+            close_time AS closeTime,
+            is_holiday AS isHoliday
+        FROM service.restaurant_operating_hours
+        <where>
+            restaurant_id in
+            <foreach item="id" collection="command" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        </where>
+    </select>
+
+    <select id="findSeatsByRestaurantIds" resultType="com.reservation.infrastructure.restaurant.restaurant.model.RestaurantSeatDTO">
+        /**  findOperatingHoursByRestaurantIds , 좌석 목록 조회  **/
+        SELECT
+            seat_id AS seatId,
+            restaurant_id AS restaurantId,
+            seat_type AS seatType,
+            seat_number AS seatNumber,
+            max_capacity AS maxCapacity,
+            is_available AS isAvailable
+        FROM service.restaurant_seat
+        <where>
+            restaurant_id in
+            <foreach item="id" collection="command" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        </where>
+    </select>
+
+</mapper>

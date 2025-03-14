@@ -16,6 +16,7 @@ spring:
       ddl-auto: none
     properties:
       hibernate:
+        default_schema: common
         format_sql: true
         show_sql: true
   cache :
@@ -75,3 +76,9 @@ mail:
   transport:
     protocol: smtp
   debug: true
+
+file:
+  upload-dir : C:\image
+
+toss:
+  secret-key: "test_sk_xxxx"
