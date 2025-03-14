@@ -40,10 +40,16 @@ public class RestaurantCreateRequest {
   @Schema(description = "예약 신청 유형", example = "ANYTIME, WEEKLY, MONTHLY")
   private ReservationOpenType reservationOpenType;
 
-  @Schema(description = "예약 신청 가능 요일/날짜 (JSON)", example = "[\"MON\", \"TUE\"]")
+  @Schema(
+      description = "예약 신청 가능 요일 또는 날짜(JSON)",
+      example = "[\"MON\", \"FRI\", \"SUN\"]",
+      hidden = true)
   private String reservationOpenDays;
 
-  @Schema(description = "예약 가능 날짜 설정 (JSON)", example = "[\"2024-04-05\", \"2024-04-10\"]")
+  @Schema(
+      description =
+          "예약 가능 날짜 설정 범위(JSON - minDays는 최소 며칠 이후부터 예약 가능한지, maxDays는 최대 며칠 이후까지 예약 가능한지)",
+      example = "{\"minDays\": 1, \"maxDays\": 30}")
   private String reservationAvailableDays;
 
   @Schema(description = "선약금", example = "10000")

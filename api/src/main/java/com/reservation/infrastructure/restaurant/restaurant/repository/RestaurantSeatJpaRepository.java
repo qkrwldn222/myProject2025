@@ -7,6 +7,8 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface RestaurantSeatJpaRepository extends JpaRepository<RestaurantSeat, Long> {
-  @Override
-  Optional<RestaurantSeat> findById(Long id);
+
+  Optional<RestaurantSeat> findBySeatId(Long id);
+
+  Optional<RestaurantSeat> findBySeatIdAndRestaurantId(Long id, Long restaurantId);
 }

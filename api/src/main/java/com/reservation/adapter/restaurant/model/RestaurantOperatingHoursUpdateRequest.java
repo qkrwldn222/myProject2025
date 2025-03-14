@@ -1,9 +1,8 @@
 package com.reservation.adapter.restaurant.model;
 
 import com.reservation.common.enums.DayOfWeekEnum;
-import java.time.LocalTime;
-
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.time.LocalTime;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -13,7 +12,10 @@ public class RestaurantOperatingHoursUpdateRequest {
   @Schema(description = "운영 시간 ID (수정할 항목의 고유 ID)", example = "10")
   private Long operatingHoursId;
 
-  @Schema(description = "요일", example = "FRI", allowableValues = {"MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"})
+  @Schema(
+      description = "요일",
+      example = "FRI",
+      allowableValues = {"MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"})
   private DayOfWeekEnum dayOfWeek;
 
   @Schema(description = "영업 시작 시간 (HH:mm 형식)", example = "10:00")

@@ -8,7 +8,6 @@ import com.reservation.common.enums.RestaurantStatus;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.util.Optional;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -71,13 +70,19 @@ public class Restaurant extends BaseEntity {
   private BigDecimal depositAmount;
 
   @Enumerated(EnumType.STRING)
-  @Column(nullable = false, length = 20,
-          columnDefinition = "ENUM('PENDING','APPROVED','REJECTED') DEFAULT 'PENDING'", name = "status")
+  @Column(
+      nullable = false,
+      length = 20,
+      columnDefinition = "ENUM('PENDING','APPROVED','REJECTED') DEFAULT 'PENDING'",
+      name = "status")
   private RegistrationStatus status;
 
   @Enumerated(EnumType.STRING)
-  @Column(nullable = false, length = 20,
-          columnDefinition = "ENUM('OPEN', 'PAUSED','CLOSED') DEFAULT 'OPEN'" , name = "management_status")
+  @Column(
+      nullable = false,
+      length = 20,
+      columnDefinition = "ENUM('OPEN', 'PAUSED','CLOSED') DEFAULT 'OPEN'",
+      name = "management_status")
   private RestaurantStatus managementStatus;
 
   /** 가게 영업 종료 변경 */
@@ -89,16 +94,23 @@ public class Restaurant extends BaseEntity {
   public void update(RestaurantUpdateCommand command) {
     this.name = Optional.ofNullable(command.getName()).orElse(this.name);
     this.category = Optional.ofNullable(command.getCategory()).orElse(this.category);
-    this.phoneNumber =  Optional.ofNullable(command.getPhoneNumber()).orElse(this.phoneNumber) ;
-    this.address =   Optional.ofNullable(command.getAddress()).orElse(this.address) ;
+    this.phoneNumber = Optional.ofNullable(command.getPhoneNumber()).orElse(this.phoneNumber);
+    this.address = Optional.ofNullable(command.getAddress()).orElse(this.address);
     this.autoConfirm = Optional.ofNullable(command.getAutoConfirm()).orElse(this.autoConfirm);
-    this.approvalTimeout = Optional.ofNullable(command.getApprovalTimeout()).orElse(this.approvalTimeout);
-    this.specialBookingDays = Optional.ofNullable(command.getSpecialBookingDays()).orElse(this.specialBookingDays);
-    this.reservationOpenType = Optional.ofNullable(command.getReservationOpenType()).orElse(this.reservationOpenType);
-    this.reservationOpenDays = Optional.ofNullable(command.getReservationOpenDays()).orElse(this.reservationOpenDays);
-    this.reservationAvailableDays = Optional.ofNullable(command.getReservationAvailableDays()).orElse(this.reservationAvailableDays);
+    this.approvalTimeout =
+        Optional.ofNullable(command.getApprovalTimeout()).orElse(this.approvalTimeout);
+    this.specialBookingDays =
+        Optional.ofNullable(command.getSpecialBookingDays()).orElse(this.specialBookingDays);
+    this.reservationOpenType =
+        Optional.ofNullable(command.getReservationOpenType()).orElse(this.reservationOpenType);
+    this.reservationOpenDays =
+        Optional.ofNullable(command.getReservationOpenDays()).orElse(this.reservationOpenDays);
+    this.reservationAvailableDays =
+        Optional.ofNullable(command.getReservationAvailableDays())
+            .orElse(this.reservationAvailableDays);
     this.depositAmount = Optional.ofNullable(command.getDepositAmount()).orElse(this.depositAmount);
-    this.managementStatus = Optional.ofNullable(command.getRestaurantStatus()).orElse(this.managementStatus);
+    this.managementStatus =
+        Optional.ofNullable(command.getRestaurantStatus()).orElse(this.managementStatus);
   }
 
   public void updateStatus(RegistrationStatus newStatus) {

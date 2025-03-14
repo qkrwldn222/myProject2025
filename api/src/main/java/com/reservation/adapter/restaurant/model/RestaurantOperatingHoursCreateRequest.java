@@ -1,16 +1,18 @@
 package com.reservation.adapter.restaurant.model;
 
 import com.reservation.common.enums.DayOfWeekEnum;
-import java.time.LocalTime;
-
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.time.LocalTime;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
 public class RestaurantOperatingHoursCreateRequest {
-  @Schema(description = "요일", example = "MON", allowableValues = {"MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"})
+  @Schema(
+      description = "요일",
+      example = "MON",
+      allowableValues = {"MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"})
   private DayOfWeekEnum dayOfWeek;
 
   @Schema(description = "영업 시작 시간 (HH:mm 형식)", example = "09:00")

@@ -2,10 +2,9 @@ package com.reservation.adapter.restaurant.mapper;
 
 import com.reservation.adapter.restaurant.model.*;
 import com.reservation.application.restaurant.restaurant.model.*;
-import java.util.List;
-
 import com.reservation.common.enums.RegistrationStatus;
 import com.reservation.common.enums.RestaurantStatus;
+import java.util.List;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
@@ -53,11 +52,9 @@ public interface RestaurantRequestMapper {
   RestaurantOperatingHoursOperateCommand toOperateCommand(
       RestaurantOperatingHoursOperateRequest request);
 
+  RestaurantApprovalCommand toRestaurantApprovalCommand(
+      Long restaurantId, RegistrationStatus state, String rejectedReason);
 
-  RestaurantApprovalCommand toRestaurantApprovalCommand(Long restaurantId, RegistrationStatus state,String rejectedReason);
-
-  RestaurantRegistrationSearchCommand toRestaurantRegistrationSearchCommand(String userId,
-   String name,
-   RestaurantStatus status,
-   RegistrationStatus managementStatus);
+  RestaurantRegistrationSearchCommand toRestaurantRegistrationSearchCommand(
+      String userId, String name, RestaurantStatus status, RegistrationStatus managementStatus);
 }

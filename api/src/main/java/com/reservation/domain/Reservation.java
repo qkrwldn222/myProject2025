@@ -19,6 +19,7 @@ public class Reservation {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Column(name = "reservation_id")
   private Long reservationId;
 
   @ManyToOne
@@ -39,7 +40,6 @@ public class Reservation {
   @Column(name = "reservation_time", nullable = false)
   private LocalTime reservationTime;
 
-  @Setter
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
   private ReservationStatus status;
@@ -60,4 +60,17 @@ public class Reservation {
   @Column(name = "reservation_at", updatable = false)
   @CreationTimestamp
   private LocalDateTime reservationAt;
+
+  @Column(name = "cancelled_at")
+  private LocalDateTime cancelledAt;
+
+  public void cancel() {
+    this.status = ReservationStatus.CANCELED;
+    this.cancelledAt = LocalDateTime.now();
+  }
+
+  public void confirm() {
+    this.status = ReservationStatus.CONFIRMED;
+    this.expiresAt = null;
+  }
 }

@@ -1,7 +1,9 @@
 package com.reservation.application.reservation.service;
 
 import com.reservation.application.reservation.model.ReservationRequestCommand;
+import com.reservation.application.reservation.model.ReservationSearchCommand;
 import com.reservation.domain.Reservation;
+import java.util.List;
 
 public interface ReservationService {
 
@@ -19,4 +21,17 @@ public interface ReservationService {
    * @return 예약 도메인
    */
   Reservation createReservation(ReservationRequestCommand command);
+
+  /**
+   * 예약 확정
+   *
+   * @param reservationId 가게 ID
+   */
+  void confirmReservation(Long reservationId);
+
+  /**
+   * @param command 조회 command
+   * @return reservation 예약
+   */
+  List<Reservation> findReservations(ReservationSearchCommand command);
 }
