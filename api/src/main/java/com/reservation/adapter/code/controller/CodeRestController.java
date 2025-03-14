@@ -10,8 +10,9 @@ import com.reservation.application.code.model.GroupCodeSearchCommand;
 import com.reservation.application.code.model.GroupCodeSearchResponse;
 import com.reservation.application.code.model.GroupCodeUpdateCommand;
 import com.reservation.application.code.service.CodeService;
-import com.reservation.common.ApiResponse;
 import com.reservation.common.config.EnableGlobalExceptionHandling;
+import com.reservation.common.response.ApiListResponse;
+import com.reservation.common.response.ApiResponseWrapper;
 import com.reservation.domain.Code;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -29,22 +30,22 @@ public class CodeRestController implements CodeSwagger {
 
   @Override
   @GetMapping("/search")
-  public ResponseEntity<ApiResponse<List<Code>>> getAllCodes(
+  public ResponseEntity<ApiListResponse<Code>> getAllCodes(
       @RequestParam("groupCode") String groupCode) {
-
-    return ResponseEntity.ok(ApiResponse.success(codeService.searchCodes(groupCode)));
+    List<Code> codes = codeService.searchCodes(groupCode);
+    return ResponseEntity.ok(ApiListResponse.multiResult("코드 조회 완료", codes));
   }
 
   @Override
   @PostMapping("/operate")
-  public ResponseEntity<ApiResponse<String>> operate(@RequestBody CodeOperateRequest request) {
+  public ResponseEntity<ApiResponseWrapper<Void>> operate(@RequestBody CodeOperateRequest request) {
 
-    return ResponseEntity.ok(ApiResponse.success("요청이 완료되었습니다."));
+    return ResponseEntity.ok(ApiResponseWrapper.actionResult("요청이 완료되었습니다."));
   }
 
   @Override
   @GetMapping("/group-code/search")
-  public ResponseEntity<ApiResponse<List<GroupCodeAdaptSearchResponse>>> searchGroupCode(
+  public ResponseEntity<ApiListResponse<GroupCodeAdaptSearchResponse>> searchGroupCode(
       @RequestParam(name = "groupCode", required = false) String groupCode,
       @RequestParam(name = "useYn", required = false) String useYn) {
     GroupCodeSearchCommand command =
@@ -55,26 +56,26 @@ public class CodeRestController implements CodeSwagger {
     List<GroupCodeAdaptSearchResponse> response =
         CodeResponseMapper.INSTANCE.toGroupCodeSearchAdaptResponses(result);
 
-    return ResponseEntity.ok(ApiResponse.success(response));
+    return ResponseEntity.ok(ApiListResponse.multiResult("그룹코드 조회 완료", response));
   }
 
   @Override
   @PostMapping("/group-code/save")
-  public ResponseEntity<ApiResponse<String>> saveGroupCode(
+  public ResponseEntity<ApiResponseWrapper<Void>> saveGroupCode(
       @RequestBody @Valid GroupCodeSaveCommand request) {
 
     codeService.saveGroupCode(request);
 
-    return ResponseEntity.ok(ApiResponse.success("요청이 완료되었습니다."));
+    return ResponseEntity.ok(ApiResponseWrapper.actionResult("요청이 완료되었습니다."));
   }
 
   @Override
   @PostMapping("/group-code/update")
-  public ResponseEntity<ApiResponse<String>> updateGroupCode(
+  public ResponseEntity<ApiResponseWrapper<Void>> updateGroupCode(
       @RequestBody @Valid GroupCodeUpdateCommand request) {
 
     codeService.updateGroupCode(request);
 
-    return ResponseEntity.ok(ApiResponse.success("요청이 완료되었습니다."));
+    return ResponseEntity.ok(ApiResponseWrapper.actionResult("요청이 완료되었습니다."));
   }
 }

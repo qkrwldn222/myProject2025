@@ -1,8 +1,7 @@
 package com.reservation.common.config;
 
+import com.reservation.common.response.ApiErrorResponse;
 import jakarta.persistence.PersistenceException;
-import java.util.HashMap;
-import java.util.Map;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -24,21 +23,16 @@ public class ExceptionAspect {
       return joinPoint.proceed(); // 원래 메서드 실행
     } catch (ApiException ex) {
       // API 예외 처리 (사용자가 해결할 수 있는 오류)
-      Map<String, String> errorResponse = new HashMap<>();
-      errorResponse.put("error", ex.getMessage());
-      return ResponseEntity.status(ex.getStatus()).body(errorResponse);
+      return ResponseEntity.status(ex.getStatus())
+          .body(new ApiErrorResponse(ex.getMessage(), ex.getStatus().value()));
     } catch (DataAccessException | PersistenceException ex) {
-      logger.info(ex.toString());
-      // DB 관련 예외 처리
-      Map<String, String> errorResponse = new HashMap<>();
-      errorResponse.put("error", "데이터베이스 오류");
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+      logger.error("데이터베이스 오류 발생: {}", ex.getMessage());
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .body(new ApiErrorResponse("데이터베이스 오류", HttpStatus.INTERNAL_SERVER_ERROR.value()));
     } catch (Throwable ex) {
-      logger.info(ex.getMessage());
-      // 기타 예외 처리
-      Map<String, String> errorResponse = new HashMap<>();
-      errorResponse.put("error", "서버 내부 오류 발생: " + ex.getMessage());
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+      logger.error("서버 내부 오류 발생: {}", ex.getMessage());
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .body(new ApiErrorResponse("서버 내부 오류 발생: ", HttpStatus.INTERNAL_SERVER_ERROR.value()));
     }
   }
 }

@@ -61,7 +61,7 @@ public class AuthController implements AuthSwagger {
     // 1. 사용자 조회
     User user =
         userService
-            .findByUsername(loginRequest.getUsername())
+            .findByUserId(loginRequest.getUserId())
             .orElseThrow(() -> new ApiException("사용자를 찾을 수 없습니다."));
 
     // 2. 비밀번호 검증

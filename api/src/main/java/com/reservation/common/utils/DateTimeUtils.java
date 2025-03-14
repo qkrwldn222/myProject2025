@@ -6,7 +6,6 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Map;
-
 import org.slf4j.Logger;
 import org.springframework.util.StringUtils;
 
@@ -70,7 +69,7 @@ public class DateTimeUtils {
   }
 
   public static LocalDateTime toLocalDateTime(String dateStr, String format) {
-     return parseDateTime(dateStr, format);
+    return parseDateTime(dateStr, format);
   }
 
   public static LocalDateTime toLocalDateTime(LocalDate localDate, LocalTime localTime) {
@@ -106,7 +105,8 @@ public class DateTimeUtils {
   }
 
   /** 특정 날짜가 예약 가능 범위에 포함되는지 검증 */
-  public static boolean isDateWithinAvailableRange(Map<String, String> dateConfig, LocalDate targetDate) {
+  public static boolean isDateWithinAvailableRange(
+      Map<String, String> dateConfig, LocalDate targetDate) {
     if (dateConfig == null || dateConfig.isEmpty()) return true;
 
     String type = dateConfig.get("type");
@@ -116,8 +116,7 @@ public class DateTimeUtils {
       LocalDate startDate = LocalDate.now();
       LocalDate endDate = startDate.plusDays(daysAfter);
       return !targetDate.isBefore(startDate) && !targetDate.isAfter(endDate);
-    }
-    else if ("FIXED_RANGE".equals(type)) {
+    } else if ("FIXED_RANGE".equals(type)) {
       LocalDate startDate = parseDate(dateConfig.get("start_date"));
       LocalDate endDate = parseDate(dateConfig.get("end_date"));
       return !targetDate.isBefore(startDate) && !targetDate.isAfter(endDate);

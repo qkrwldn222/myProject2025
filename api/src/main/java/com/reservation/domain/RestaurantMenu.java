@@ -1,42 +1,47 @@
 package com.reservation.domain;
 
-
+import com.reservation.application.restaurant.restaurant.model.RestaurantMenuUpdateCommand;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-
 import java.math.BigDecimal;
+import java.util.Optional;
+import lombok.*;
 
 @Entity
-@Table(name = "service.restaurant_menu")
+@Table(name = "restaurant_menu", catalog = "service")
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class RestaurantMenu {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long menuId;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long menuId;
 
-    @ManyToOne
-    @JoinColumn(name = "restaurant_id", nullable = false)
-    private Restaurant restaurant;
+  @ManyToOne
+  @JoinColumn(name = "restaurant_id", nullable = false)
+  private Restaurant restaurant;
 
-    @Column(nullable = false, length = 255)
-    private String name;
+  @Column(nullable = false, length = 255)
+  private String name;
 
-    @Column(columnDefinition = "TEXT")
-    private String description;
+  @Column(columnDefinition = "TEXT")
+  private String description;
 
-    @Column(nullable = false, precision = 10, scale = 2)
-    private BigDecimal price;
+  @Column(nullable = false, precision = 10, scale = 2)
+  private BigDecimal price;
 
-    @Column(length = 500)
-    private String imageUrl;
+  @Column(length = 500)
+  private String imageUrl;
 
-    @Column(nullable = false)
-    private Boolean isBest; //대표 메뉴
+  @Column(nullable = false)
+  private Boolean isBest; // 대표 메뉴
+
+  public void update(RestaurantMenuUpdateCommand command) {
+    this.name = command.getName();
+    this.description = Optional.ofNullable(command.getDescription()).orElse(this.description);
+    this.price = Optional.ofNullable(command.getPrice()).orElse(this.price);
+    this.imageUrl = Optional.ofNullable(command.getImageUrl()).orElse(this.imageUrl);
+    this.isBest = Optional.ofNullable(command.getIsBest()).orElse(this.isBest);
+  }
 }

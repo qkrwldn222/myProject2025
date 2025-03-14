@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -40,12 +41,14 @@ public class SecurityConfig {
     http.csrf(csrf -> csrf.disable()) // CSRF 비활성화
         .sessionManagement(
             session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 세션 관리 X
+        .securityContext(securityContext -> securityContext.requireExplicitSave(false))
         .authorizeHttpRequests(
             auth -> {
               // Swagger & OpenAPI 허용
-              auth.requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html")
+              auth.requestMatchers(
+                      "/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html", "/favicon.ico")
                   .permitAll();
-
+              auth.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll();
               // 회원가입 & 로그인 허용
               auth.requestMatchers(
                       "/auth/signup", "/auth/login", "/auth/kakao/signup", "/auth/logout")
@@ -63,6 +66,7 @@ public class SecurityConfig {
                       request -> {
                         Authentication authentication =
                             SecurityContextHolder.getContext().getAuthentication();
+
                         String role = getUserRoleRankFromSecurityContext();
 
                         System.out.println("현재 요청의 인증 객체: " + authentication);

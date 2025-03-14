@@ -14,4 +14,6 @@ public interface MenuService {
   void operateMenu(MenuOperateCommand command);
 
   List<Menu> findAll();
+
+  void clearMenuCache();
 }

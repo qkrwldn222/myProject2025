@@ -1,5 +1,6 @@
 package com.reservation.common.enums;
 
+import com.reservation.common.config.ApiException;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -21,6 +22,6 @@ public enum RoleType {
         return role;
       }
     }
-    throw new IllegalArgumentException("잘못된 역할 코드: " + code);
+    throw new ApiException("잘못된 역할 코드: " + code);
   }
 }

@@ -5,29 +5,36 @@ import com.reservation.common.enums.RegistrationStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.Optional;
+
 @Entity
-@Table(name = "service.restaurant_registration")
+@Table(name = "restaurant_registration", catalog = "service")
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class RestaurantRegistration extends BaseEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Column(name = "registration_id")
+  private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "restaurant_id", nullable = false)
-    private Restaurant restaurant;
+  @ManyToOne
+  @JoinColumn(name = "restaurant_id", nullable = false)
+  private Restaurant restaurant;
 
-    @ManyToOne
-    @JoinColumn(name = "owner_id", nullable = false)
-    private User owner;
+  @ManyToOne
+  @JoinColumn(name = "owner_id", nullable = false)
+  private User owner;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private RegistrationStatus status; // PENDING, APPROVED, REJECTED
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
+  private RegistrationStatus status; // PENDING, APPROVED, REJECTED
 
-    @Column
-    private String rejectedReason;
+  @Column private String rejectedReason;
+
+  public void updateStatus(RegistrationStatus newStatus, String rejectedReason) {
+    this.status = newStatus;
+    this.rejectedReason = Optional.ofNullable(rejectedReason).orElse("");
+  }
 }

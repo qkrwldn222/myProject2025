@@ -2,9 +2,10 @@ package com.reservation.application.user.service;
 
 import com.reservation.application.user.model.SignupCommand;
 import com.reservation.application.user.repository.UserKakaoRepository;
-import com.reservation.common.service.EmailService;
 import com.reservation.common.config.ApiException;
 import com.reservation.common.enums.RoleType;
+import com.reservation.common.service.EmailService;
+import com.reservation.common.utils.SecurityUtil;
 import com.reservation.domain.KakaoUserInfo;
 import com.reservation.domain.Role;
 import com.reservation.domain.User;
@@ -19,9 +20,6 @@ import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.aop.framework.AopContext;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,31 +39,19 @@ public class UserRestService implements UserService {
 
   private static final long AUTH_CODE_EXPIRATION = 5 * 60; // 5분
 
-  public List<User> getAllUsers() {
-    UserService proxyInstance = (UserService) AopContext.currentProxy(); // Spring 프록시 활용
-    return proxyInstance.findAll();
-  }
-
-  @Cacheable(value = "users", sync = true)
   @Override
   public List<User> findAll() {
     return userRepository.findAll();
   }
 
-  // 캐시 초기화 (무효화)
-  @CacheEvict(value = "users", allEntries = true)
-  public void clearUsersCache() {
-    logger.info("유저 정보 캐시를 초기화했습니다.");
-  }
-
   @Override
   public Optional<User> findByUserId(String userId) {
-    return getAllUsers().stream().filter(data -> data.getUserID().equals(userId)).findFirst();
+    return findAll().stream().filter(data -> data.getUserID().equals(userId)).findFirst();
   }
 
   @Override
   public Optional<User> findById(Long userId) {
-    return getAllUsers().stream().filter(data -> data.getId().equals(userId)).findFirst();
+    return findAll().stream().filter(data -> data.getId().equals(userId)).findFirst();
   }
 
   @Transactional
@@ -98,9 +84,7 @@ public class UserRestService implements UserService {
   }
 
   public Optional<User> findByUsername(String username) {
-    return this.getAllUsers().stream()
-        .filter(data -> data.getUsername().equals(username))
-        .findFirst();
+    return findAll().stream().filter(data -> data.getUsername().equals(username)).findFirst();
   }
 
   @Override
@@ -181,12 +165,30 @@ public class UserRestService implements UserService {
     User user =
         userRepository.findByEmail(email).orElseThrow(() -> new ApiException("사용자를 찾을 수 없습니다."));
 
-    //    user.updatePassword(newPassword);
+    user.updatePassword(newPassword);
     // 비밀번호 암호화 후 저장
     userRepository.save(user);
 
     // 토큰 삭제 (재사용 방지)
     redisTemplate.delete("RESET_TOKEN:" + resetToken);
     return user;
+  }
+
+  @Override
+  public boolean isOwner(Long userId) {
+    Optional<User> user = findById(userId);
+    return user.isPresent() && user.get().getRole().getRoleType() == RoleType.STORE_OWNER;
+  }
+
+  @Override
+  public boolean isAdmin(Long userId) {
+    Optional<User> user = findById(userId);
+    return user.isPresent() && user.get().getRole().getRoleType() == RoleType.ADMIN;
+  }
+
+  @Override
+  public boolean isAdmin() {
+    Optional<User> user = findByUserId(SecurityUtil.getCurrentUserId());
+    return user.isPresent() && user.get().getRole().getRoleType() == RoleType.ADMIN;
   }
 }
