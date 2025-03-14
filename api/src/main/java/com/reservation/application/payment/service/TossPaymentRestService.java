@@ -3,11 +3,12 @@ package com.reservation.application.payment.service;
 import com.reservation.infrastructure.payment.model.TossPaymentResponse;
 import java.math.BigDecimal;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
-// @Service
+@Service
 @RequiredArgsConstructor
 public class TossPaymentRestService implements PaymentService<TossPaymentResponse> {
-  //    private final TossPaymentExternalRepository tossPaymentExternalRepository;
+  //      private final TossPaymentExternalRepository tossPaymentExternalRepository;
 
   @Override
   public TossPaymentResponse requestPayment(BigDecimal amount, String customerName) {

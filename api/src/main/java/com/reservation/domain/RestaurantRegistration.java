@@ -3,9 +3,8 @@ package com.reservation.domain;
 import com.reservation.common.config.BaseEntity;
 import com.reservation.common.enums.RegistrationStatus;
 import jakarta.persistence.*;
-import lombok.*;
-
 import java.util.Optional;
+import lombok.*;
 
 @Entity
 @Table(name = "restaurant_registration", catalog = "service")

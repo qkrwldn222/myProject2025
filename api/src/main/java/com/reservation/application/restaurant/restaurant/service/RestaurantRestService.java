@@ -1,13 +1,11 @@
 package com.reservation.application.restaurant.restaurant.service;
 
-import com.reservation.application.restaurant.restaurant.mapper.RestaurantAppRequestMapper;
 import com.reservation.application.restaurant.restaurant.mapper.RestaurantAppResponseMapper;
 import com.reservation.application.restaurant.restaurant.model.*;
 import com.reservation.application.restaurant.restaurant.repository.RestaurantRepository;
 import com.reservation.application.user.service.UserService;
 import com.reservation.common.config.ApiException;
 import com.reservation.common.enums.RegistrationStatus;
-import com.reservation.common.enums.RestaurantStatus;
 import com.reservation.domain.*;
 import com.reservation.infrastructure.restaurant.restaurant.model.RestaurantMenuDTO;
 import com.reservation.infrastructure.restaurant.restaurant.model.RestaurantOperatingHoursDTO;
@@ -17,6 +15,7 @@ import com.reservation.infrastructure.restaurant.restaurant.repository.*;
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -54,11 +53,7 @@ public class RestaurantRestService implements RestaurantService {
             .category(command.getCategory())
             .phoneNumber(command.getPhoneNumber())
             .address(command.getAddress())
-                .ownerId(command.getOwnerId())
-//            .ownerUser(
-//                userService
-//                    .findById(command.getOwnerId())
-//                    .orElseThrow(() -> new ApiException("해당 사용자를 찾을 수 없습니다.")))
+            .ownerId(command.getOwnerId())
             .autoConfirm(command.getAutoConfirm() != null ? command.getAutoConfirm() : false)
             .approvalTimeout(
                 command.getApprovalTimeout() != null ? command.getApprovalTimeout() : 60)
@@ -303,15 +298,20 @@ public class RestaurantRestService implements RestaurantService {
   public void approveRestaurant(RestaurantApprovalCommand command) {
     command.validate();
 
-    Restaurant restaurant = restaurantRepository.findById(command.getRestaurantId())
+    Restaurant restaurant =
+        restaurantRepository
+            .findById(command.getRestaurantId())
             .orElseThrow(() -> new ApiException("가게를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
 
     // 입점 신청 내역 조회
-    RestaurantRegistration registration = restaurantRegistrationRepository.findByRestaurantId(command.getRestaurantId())
+    RestaurantRegistration registration =
+        restaurantRegistrationRepository
+            .findByRestaurantId(command.getRestaurantId())
             .orElseThrow(() -> new ApiException("입점 신청 내역을 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
 
     // 현재 상태 확인 (이미 승인/거절된 경우 예외 처리)
-    if (registration.getStatus() == RegistrationStatus.APPROVED || registration.getStatus() == RegistrationStatus.REJECTED) {
+    if (registration.getStatus() == RegistrationStatus.APPROVED
+        || registration.getStatus() == RegistrationStatus.REJECTED) {
       throw new ApiException("이미 처리된 가게 신청입니다.", HttpStatus.BAD_REQUEST);
     }
 
@@ -322,41 +322,68 @@ public class RestaurantRestService implements RestaurantService {
 
     // 상태 변경 및 저장
     restaurant.updateStatus(command.getState());
-    registration.updateStatus(command.getState(), StringUtils.hasText(command.getRejectedReason()) ? command.getRejectedReason() : null);
+    registration.updateStatus(
+        command.getState(),
+        StringUtils.hasText(command.getRejectedReason()) ? command.getRejectedReason() : null);
     restaurantRepository.save(restaurant);
     restaurantRegistrationRepository.save(registration);
   }
 
   @Override
   @Transactional(readOnly = true)
-  public List<RestaurantDetailResponse> searchRegistrations(RestaurantRegistrationSearchCommand command) {
+  public List<RestaurantDetailResponse> searchRegistrations(
+      RestaurantRegistrationSearchCommand command) {
 
     // 레스토랑 리스트 조회
-    List<RestaurantRegistrationDTO> restaurants = restaurantMybatisRepository.searchRegistrations(command);
+    List<RestaurantRegistrationDTO> restaurants =
+        restaurantMybatisRepository.searchRegistrations(command);
 
-    //restaurant_id 목록 추출
-    List<Long> restaurantIds = restaurants.stream()
-            .map(RestaurantRegistrationDTO::getRestaurantId)
-            .toList();
+    // restaurant_id 목록 추출
+    List<Long> restaurantIds =
+        restaurants.stream().map(RestaurantRegistrationDTO::getRestaurantId).toList();
 
     if (restaurantIds.isEmpty()) {
       return Collections.emptyList();
     }
 
-    //메뉴, 운영시간, 좌석 조회 (foreach 사용)
-    List<RestaurantMenuDTO> menus = restaurantMybatisRepository.findMenusByRestaurantId(restaurantIds);
-    List<RestaurantOperatingHoursDTO> operatingHours = restaurantMybatisRepository.findOperatingHoursByRestaurantId(restaurantIds);
-    List<RestaurantSeatDTO> seats = restaurantMybatisRepository.findSeatsByRestaurantId(restaurantIds);
+    // 메뉴, 운영시간, 좌석 조회 (foreach 사용)
+    List<RestaurantMenuDTO> menus =
+        restaurantMybatisRepository.findMenusByRestaurantId(restaurantIds);
+    List<RestaurantOperatingHoursDTO> operatingHours =
+        restaurantMybatisRepository.findOperatingHoursByRestaurantId(restaurantIds);
+    List<RestaurantSeatDTO> seats =
+        restaurantMybatisRepository.findSeatsByRestaurantId(restaurantIds);
 
     // 레스토랑 리스트를 `stream`으로 돌면서 메뉴, 운영시간, 좌석 매핑
     return restaurants.stream()
-            .map(restaurant -> RestaurantAppResponseMapper.INSTANCE.toRestaurantDetailResponse(
+        .map(
+            restaurant ->
+                RestaurantAppResponseMapper.INSTANCE.toRestaurantDetailResponse(
                     restaurant,
-                    menus.stream().filter(menu -> menu.getRestaurantId().equals(restaurant.getRestaurantId())).toList(),
-                    operatingHours.stream().filter(menu -> menu.getRestaurantId().equals(restaurant.getRestaurantId())).toList(),
-                    seats.stream().filter(menu -> menu.getRestaurantId().equals(restaurant.getRestaurantId())).toList()
-            ))
-            .toList();
+                    menus.stream()
+                        .filter(menu -> menu.getRestaurantId().equals(restaurant.getRestaurantId()))
+                        .toList(),
+                    operatingHours.stream()
+                        .filter(menu -> menu.getRestaurantId().equals(restaurant.getRestaurantId()))
+                        .toList(),
+                    seats.stream()
+                        .filter(menu -> menu.getRestaurantId().equals(restaurant.getRestaurantId()))
+                        .toList()))
+        .toList();
   }
 
+  @Override
+  public Optional<Restaurant> findByOwnerId(Long userId) {
+    return restaurantRepository.findByOwnerId(userId);
+  }
+
+  @Override
+  public Optional<Restaurant> findById(Long restaurantId) {
+    return restaurantRepository.findById(restaurantId);
+  }
+
+  @Override
+  public Optional<RestaurantSeat> findBySeatIdAndRestaurantId(Long seatId, Long restaurantId) {
+    return restaurantSeatRepository.findBySeatIdAndRestaurantId(seatId, restaurantId);
+  }
 }

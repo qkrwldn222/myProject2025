@@ -12,11 +12,10 @@ import com.reservation.common.enums.RegistrationStatus;
 import com.reservation.common.enums.RestaurantStatus;
 import com.reservation.common.response.ApiListResponse;
 import com.reservation.common.response.ApiResponseWrapper;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController("restaurants")
 @RequiredArgsConstructor
@@ -37,7 +36,8 @@ public class RestaurantController implements RestaurantSwagger {
   @Override
   @PutMapping("/{restaurantId}")
   public ResponseEntity<ApiResponseWrapper<Void>> updateRestaurant(
-      @PathVariable("restaurantId") Long restaurantId, @RequestBody RestaurantUpdateRequest request) {
+      @PathVariable("restaurantId") Long restaurantId,
+      @RequestBody RestaurantUpdateRequest request) {
 
     RestaurantUpdateCommand command =
         RestaurantRequestMapper.INSTANCE.toUpdateCommand(restaurantId, request);
@@ -57,7 +57,8 @@ public class RestaurantController implements RestaurantSwagger {
   @Override
   @PostMapping("/{restaurantId}/seat/operate")
   public ResponseEntity<ApiResponseWrapper<Void>> operateSeats(
-      @PathVariable("restaurantId") Long restaurantId, @RequestBody RestaurantSeatOperateRequest request) {
+      @PathVariable("restaurantId") Long restaurantId,
+      @RequestBody RestaurantSeatOperateRequest request) {
 
     RestaurantSeatRequestCommand command = RestaurantRequestMapper.INSTANCE.toCommand(request);
 
@@ -69,7 +70,8 @@ public class RestaurantController implements RestaurantSwagger {
   @Override
   @PostMapping("/{restaurantId}/menu/operate")
   public ResponseEntity<ApiResponseWrapper<Void>> operateMenu(
-      @PathVariable("restaurantId") Long restaurantId, @RequestBody RestaurantMenuOperateRequest request) {
+      @PathVariable("restaurantId") Long restaurantId,
+      @RequestBody RestaurantMenuOperateRequest request) {
     RestaurantMenuOperateCommand command = RestaurantRequestMapper.INSTANCE.toCommand(request);
 
     restaurantService.operateMenus(restaurantId, command);
@@ -92,29 +94,37 @@ public class RestaurantController implements RestaurantSwagger {
 
   @Override
   @GetMapping("/search/registrations")
-  public ResponseEntity<ApiListResponse<RestaurantSearchRegistrationsResponse>> searchRestaurantRegistrations(
-          @RequestParam(name = "userId" , required = false ) String userId,
-          @RequestParam(name = "name" , required = false) String name,
-          @RequestParam(name = "status" , required = false ) RestaurantStatus status,
-          @RequestParam(name = "managementStatus" , required = false )RegistrationStatus managementStatus) {
-    RestaurantRegistrationSearchCommand command = RestaurantRequestMapper.INSTANCE.toRestaurantRegistrationSearchCommand(userId, name, status, managementStatus);
+  public ResponseEntity<ApiListResponse<RestaurantSearchRegistrationsResponse>>
+      searchRestaurantRegistrations(
+          @RequestParam(name = "userId", required = false) String userId,
+          @RequestParam(name = "name", required = false) String name,
+          @RequestParam(name = "status", required = false) RestaurantStatus status,
+          @RequestParam(name = "managementStatus", required = false)
+              RegistrationStatus managementStatus) {
+    RestaurantRegistrationSearchCommand command =
+        RestaurantRequestMapper.INSTANCE.toRestaurantRegistrationSearchCommand(
+            userId, name, status, managementStatus);
 
-    List<RestaurantDetailResponse> restaurantDetailResponses = restaurantService.searchRegistrations(command);
+    List<RestaurantDetailResponse> restaurantDetailResponses =
+        restaurantService.searchRegistrations(command);
 
-    List<RestaurantSearchRegistrationsResponse> result = RestaurantResponseMapper.INSTANCE.toRestaurantSearchRegistrationsResponses(restaurantDetailResponses);
+    List<RestaurantSearchRegistrationsResponse> result =
+        RestaurantResponseMapper.INSTANCE.toRestaurantSearchRegistrationsResponses(
+            restaurantDetailResponses);
 
-    return ResponseEntity.ok(ApiListResponse.multiResult("조회 성공",result));
+    return ResponseEntity.ok(ApiListResponse.multiResult("조회 성공", result));
   }
-
 
   @Override
   @PostMapping("/{restaurantId}/process")
   public ResponseEntity<ApiResponseWrapper<Void>> processRestaurantApproval(
-          @PathVariable("restaurantId") Long restaurantId,
-          @RequestParam("state") RegistrationStatus state,
-          @RequestParam("rejectedReason") String rejectedReason) {
+      @PathVariable("restaurantId") Long restaurantId,
+      @RequestParam("state") RegistrationStatus state,
+      @RequestParam("rejectedReason") String rejectedReason) {
 
-    RestaurantApprovalCommand commnad = RestaurantRequestMapper.INSTANCE.toRestaurantApprovalCommand(restaurantId, state, rejectedReason);
+    RestaurantApprovalCommand commnad =
+        RestaurantRequestMapper.INSTANCE.toRestaurantApprovalCommand(
+            restaurantId, state, rejectedReason);
 
     restaurantService.approveRestaurant(commnad);
 

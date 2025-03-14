@@ -15,7 +15,6 @@ public interface RestaurantAppRequestMapper {
 
   Restaurant toRestaurant(RestaurantCreateCommand command);
 
-
   @Mapping(target = "restaurant", ignore = true) // Context에서 매핑
   RestaurantMenu toMenu(RestaurantMenuCommand menuCommand, @Context Restaurant restaurant);
 

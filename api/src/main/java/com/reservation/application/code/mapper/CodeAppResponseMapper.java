@@ -4,7 +4,6 @@ import com.reservation.application.code.model.GroupCodeSearchResponse;
 import com.reservation.infrastructure.code.model.GroupCodeDTO;
 import java.util.List;
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 
 @Mapper
