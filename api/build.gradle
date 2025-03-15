@@ -39,6 +39,15 @@ dependencies {
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0'
     implementation 'org.springframework.boot:spring-boot-starter-mail'
 
+
+    // 테스트 관련
+    testImplementation 'org.testcontainers:junit-jupiter' // 필수 (Testcontainers 기본 지원)
+    testImplementation 'org.testcontainers:mysql'         // MySQL 사용 시 추천
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.testcontainers:mysql'
+    runtimeOnly 'com.mysql:mysql-connector-j'
+
+
     // JWT 인증 관련
     implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
     implementation 'io.jsonwebtoken:jjwt-impl:0.11.5'

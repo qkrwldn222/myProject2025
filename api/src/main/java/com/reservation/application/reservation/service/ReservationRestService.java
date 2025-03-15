@@ -12,6 +12,7 @@ import com.reservation.common.enums.ReservationStatus;
 import com.reservation.common.enums.RoleType;
 import com.reservation.common.utils.DateTimeUtils;
 import com.reservation.common.utils.JsonUtils;
+import com.reservation.common.utils.RedisKeyUtil;
 import com.reservation.common.utils.SecurityUtil;
 import com.reservation.domain.*;
 import com.reservation.infrastructure.payment.model.TossPaymentResponse;
@@ -75,10 +76,11 @@ public class ReservationRestService implements ReservationService {
       throw new ApiException("이미 지난 예약은 취소할 수 없습니다.", HttpStatus.BAD_REQUEST);
     }
 
+    BigDecimal refundAmount = BigDecimal.ZERO;
     // 예약금 환불 처리 (환불 정책 적용)
     if (reservation.getDepositAmount() != null
         && reservation.getDepositAmount().compareTo(BigDecimal.ZERO) > 0) {
-      BigDecimal refundAmount = calculateRefundAmount(reservation);
+      refundAmount = calculateRefundAmount(reservation);
 
       if (refundAmount.compareTo(BigDecimal.ZERO) > 0) {
         //                paymentService.refundPayment(reservation.getPaymentKey(),
@@ -86,26 +88,21 @@ public class ReservationRestService implements ReservationService {
       }
     }
 
-    reservation.cancel();
+    reservation.cancel(refundAmount);
     reservationRepository.save(reservation);
 
     // Redis 데이터 삭제 (동일 좌석 & 사용자 예약 삭제)
     String seatKey =
-        "reservation:"
-            + reservation.getRestaurant().getId()
-            + ":"
-            + reservation.getSeat().getSeatId()
-            + ":"
-            + reservation.getReservationDate()
-            + ":"
-            + reservation.getReservationTime();
+        RedisKeyUtil.createSeatReservationKey(
+            reservation.getRestaurant().getId(),
+            reservation.getSeat().getSeatId(),
+            reservation.getReservationDate(),
+            reservation.getReservationTime());
     String userKey =
-        "user-reservation:"
-            + reservation.getUser().getId()
-            + ":"
-            + reservation.getReservationDate()
-            + ":"
-            + reservation.getReservationTime();
+        RedisKeyUtil.createUserReservationKey(
+            reservation.getUser().getId(),
+            reservation.getReservationDate(),
+            reservation.getReservationTime());
 
     redisTemplate.delete(seatKey);
     redisTemplate.delete(userKey);
@@ -115,44 +112,60 @@ public class ReservationRestService implements ReservationService {
   @Transactional
   public Reservation createReservation(ReservationRequestCommand command) {
     command.validate();
+
     String seatKey =
-        "reservation:"
-            + command.getRestaurantId()
-            + ":"
-            + command.getSeatId()
-            + ":"
-            + command.getReservationDate()
-            + ":"
-            + command.getReservationTime();
+        RedisKeyUtil.createSeatReservationKey(
+            command.getRestaurantId(),
+            command.getSeatId(),
+            command.getReservationDate(),
+            command.getReservationTime());
+
     String userKey =
-        "user-reservation:"
-            + command.getUserId()
-            + ":"
-            + command.getReservationDate()
-            + ":"
-            + command.getReservationTime();
+        RedisKeyUtil.createUserReservationKey(
+            command.getUserId(), command.getReservationDate(), command.getReservationTime());
 
-    // Redis에서 동일 시간대 다른 가게 예약 확인
-    Set<String> userReservationKeys =
-        redisTemplate.keys(
-            "user-reservation:" + command.getUserId() + ":" + command.getReservationDate() + ":*");
+    // 1. **들어오자마자 좌석 점유 (선점)**
+    Boolean isLocked =
+        redisTemplate
+            .opsForValue()
+            .setIfAbsent(seatKey, "reserved", EXPIRED_TIME, TimeUnit.MINUTES);
 
-    if (!CollectionUtils.isEmpty(userReservationKeys)) {
-      throw new ApiException("이미 동일 시간대에 예약된 가게가 있습니다.", HttpStatus.BAD_REQUEST);
-    }
-
-    // Redis에서  중복 예약 확인
-    if (Boolean.TRUE.equals(redisTemplate.hasKey(seatKey))) {
+    if (Boolean.FALSE.equals(isLocked)) {
       throw new ApiException("이미 해당 좌석이 예약되었습니다.", HttpStatus.BAD_REQUEST);
     }
 
-    Reservation reservation = saveReservation(command);
+    try {
+      // 2. 유저 존재 여부 확인
+      User user =
+          userService
+              .findById(command.getUserId())
+              .orElseThrow(() -> new ApiException("유저를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
 
-    // Redis에 예약 정보 저장 (만료 시간: 10분)
-    redisTemplate.opsForValue().set(seatKey, "reserved", EXPIRED_TIME, TimeUnit.MINUTES);
-    redisTemplate.opsForValue().set(userKey, "reserved", EXPIRED_TIME, TimeUnit.MINUTES);
+      // 3. 동일 시간대 다른 가게 예약 여부 확인
+      Set<String> userReservationKeys =
+          redisTemplate.keys(
+              "user-reservation:"
+                  + command.getUserId()
+                  + ":"
+                  + command.getReservationDate()
+                  + ":*");
 
-    return reservation;
+      if (!CollectionUtils.isEmpty(userReservationKeys)) {
+        throw new ApiException("이미 동일 시간대에 예약된 가게가 있습니다.", HttpStatus.BAD_REQUEST);
+      }
+
+      // 4. 예약 저장
+      Reservation reservation = saveReservation(command);
+
+      // 5. 사용자 예약 정보 저장
+      redisTemplate.opsForValue().set(userKey, "reserved", EXPIRED_TIME, TimeUnit.MINUTES);
+
+      return reservation;
+    } catch (Exception e) {
+      // 예외 발생 시 **즉시 점유 해제**
+      redisTemplate.delete(seatKey);
+      throw e;
+    }
   }
 
   @Transactional
@@ -193,7 +206,7 @@ public class ReservationRestService implements ReservationService {
     LocalDateTime now = LocalDateTime.now();
 
     if (now.isAfter(reservation.getExpiresAt())) {
-      reservation.cancel();
+      reservation.cancel(null);
       reservationRepository.save(reservation);
       throw new ApiException("승인 대기 시간이 초과되어 예약이 자동 취소되었습니다.");
     }
@@ -236,15 +249,15 @@ public class ReservationRestService implements ReservationService {
     // 선약금이 있는 경우 결제 먼저 수행
     BigDecimal depositAmount = restaurant.getDepositAmount();
 
-    TossPaymentResponse requestPayment = null;
-    if (depositAmount != null && depositAmount.compareTo(BigDecimal.ZERO) > 0) {
-      Optional<User> User = userService.findById(command.getUserId());
-      //            requestPayment = (TossPaymentResponse)
-      // paymentService.requestPayment(depositAmount, User.get().getUsername());
-      if (!StringUtils.hasText(requestPayment.getPaymentKey())) {
-        throw new ApiException("예약금 결제 실패");
-      }
-    }
+    TossPaymentResponse requestPayment = new TossPaymentResponse();
+    //    if (depositAmount != null && depositAmount.compareTo(BigDecimal.ZERO) > 0) {
+    //      Optional<User> User = userService.findById(command.getUserId());
+    //                  requestPayment = (TossPaymentResponse)
+    //       paymentService.requestPayment(depositAmount, User.get().getUsername());
+    //      if (!StringUtils.hasText(requestPayment.getPaymentKey())) {
+    //        throw new ApiException("예약금 결제 실패");
+    //      }
+    //    }
 
     Reservation reservation =
         Reservation.builder()
@@ -264,7 +277,7 @@ public class ReservationRestService implements ReservationService {
             .paymentKey(
                 StringUtils.hasText(requestPayment.getPaymentKey())
                     ? requestPayment.getPaymentKey()
-                    : UUID.randomUUID().toString())
+                    : null)
             .orderId(
                 StringUtils.hasText(requestPayment.getOrderId())
                     ? requestPayment.getOrderId()
@@ -289,7 +302,7 @@ public class ReservationRestService implements ReservationService {
             ReservationStatus.PENDING, LocalDateTime.now());
 
     for (Reservation reservation : expiredReservations) {
-      reservation.cancel();
+      reservation.cancel(null);
       reservationRepository.save(reservation);
       logger.info("자동 취소된 예약 ID: " + reservation.getReservationId());
     }
@@ -330,11 +343,16 @@ public class ReservationRestService implements ReservationService {
       Restaurant restaurant, LocalDate requestDate, LocalDate reservationDate) {
     ReservationOpenType type = restaurant.getReservationOpenType();
 
+    if (reservationDate.isBefore(LocalDate.now())) return false;
+
+    if (type.equals(ReservationOpenType.ANYTIME)) return true;
+
     // 예약 가능일 범위 검증 (reservationDate)
     Map<String, String> dateConfig =
         JsonUtils.parseJsonToMap(restaurant.getReservationAvailableDays());
-    int minDays = Integer.parseInt(dateConfig.getOrDefault("minDays", "1"));
-    int maxDays = Integer.parseInt(dateConfig.getOrDefault("maxDays", "365"));
+
+    int minDays = Integer.parseInt(dateConfig.get("minDays"));
+    int maxDays = Integer.parseInt(dateConfig.get("maxDays"));
 
     LocalDate minReservationDate = requestDate.plusDays(minDays);
     LocalDate maxReservationDate = requestDate.plusDays(maxDays);

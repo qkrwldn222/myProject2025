@@ -64,9 +64,13 @@ public class Reservation {
   @Column(name = "cancelled_at")
   private LocalDateTime cancelledAt;
 
-  public void cancel() {
+  @Column(name = "refund_amount")
+  private BigDecimal refundAmount;
+
+  public void cancel(BigDecimal refundAmount) {
     this.status = ReservationStatus.CANCELED;
     this.cancelledAt = LocalDateTime.now();
+    this.refundAmount = refundAmount;
   }
 
   public void confirm() {
