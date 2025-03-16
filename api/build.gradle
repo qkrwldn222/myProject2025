@@ -45,6 +45,8 @@ dependencies {
     testImplementation 'org.testcontainers:mysql'         // MySQL 사용 시 추천
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.testcontainers:mysql'
+    testImplementation 'org.springframework.security:spring-security-test'
+
     runtimeOnly 'com.mysql:mysql-connector-j'
 
 

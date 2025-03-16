@@ -18,6 +18,7 @@ public class RefundPolicy extends BaseEntity {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Column(name = "policy_id")
   private Long id;
 
   @ManyToOne

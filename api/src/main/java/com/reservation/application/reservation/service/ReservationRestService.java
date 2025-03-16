@@ -34,6 +34,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 @Service
@@ -62,8 +63,19 @@ public class ReservationRestService implements ReservationService {
             .findById(reservationId)
             .orElseThrow(() -> new ApiException("예약을 찾을 수 없습니다.", HttpStatus.BAD_REQUEST));
 
-    if (!reservation.getUser().getUserID().equals(currentUserId) || !userService.isAdmin())
-      throw new ApiException("예약 취소 권한이 없습니다.", HttpStatus.FORBIDDEN);
+    Restaurant restaurant =
+        restaurantService
+            .findById(reservation.getRestaurant().getId())
+            .orElseThrow(() -> new ApiException("가게를 찾을 수 없습니다.", HttpStatus.BAD_REQUEST));
+
+    User user =
+        userService
+            .findById(restaurant.getOwnerId())
+            .orElseThrow(() -> new ApiException("가게 운영자를 찾을 수 없습니다.", HttpStatus.BAD_REQUEST));
+
+    if (!(user.getUserID().equals(currentUserId)
+        || reservation.getUser().getUserID().equals(currentUserId)
+        || userService.isAdmin())) throw new ApiException("예약 취소 권한이 없습니다.", HttpStatus.FORBIDDEN);
 
     if (reservation.getStatus().equals(ReservationStatus.CANCELED)) {
       throw new ApiException("이미 취소된 예약입니다.", HttpStatus.BAD_REQUEST);
@@ -172,6 +184,9 @@ public class ReservationRestService implements ReservationService {
   public void confirmReservation(Long reservationId) {
     String currentUserId = SecurityUtil.getCurrentUserId();
 
+    if (!StringUtils.hasText(currentUserId)) throw new ApiException("로그인 사용자를 찾을 수 없습니다.");
+    System.out.println("currentUserId ::::::" + currentUserId);
+
     Reservation reservation =
         reservationRepository
             .findById(reservationId)
@@ -205,7 +220,8 @@ public class ReservationRestService implements ReservationService {
     // 승인 대기 시간이 초과 시 자동 취소
     LocalDateTime now = LocalDateTime.now();
 
-    if (now.isAfter(reservation.getExpiresAt())) {
+    if (!ObjectUtils.isEmpty(reservation.getExpiresAt())
+        && now.isAfter(reservation.getExpiresAt())) {
       reservation.cancel(null);
       reservationRepository.save(reservation);
       throw new ApiException("승인 대기 시간이 초과되어 예약이 자동 취소되었습니다.");
@@ -250,14 +266,15 @@ public class ReservationRestService implements ReservationService {
     BigDecimal depositAmount = restaurant.getDepositAmount();
 
     TossPaymentResponse requestPayment = new TossPaymentResponse();
-    //    if (depositAmount != null && depositAmount.compareTo(BigDecimal.ZERO) > 0) {
-    //      Optional<User> User = userService.findById(command.getUserId());
-    //                  requestPayment = (TossPaymentResponse)
-    //       paymentService.requestPayment(depositAmount, User.get().getUsername());
-    //      if (!StringUtils.hasText(requestPayment.getPaymentKey())) {
-    //        throw new ApiException("예약금 결제 실패");
-    //      }
-    //    }
+    if (depositAmount != null && depositAmount.compareTo(BigDecimal.ZERO) > 0) {
+      Optional<User> User = userService.findById(command.getUserId());
+      requestPayment =
+          (TossPaymentResponse)
+              paymentService.requestPayment(depositAmount, User.get().getUsername());
+      if (!StringUtils.hasText(requestPayment.getPaymentKey())) {
+        throw new ApiException("예약금 결제 실패");
+      }
+    }
 
     Reservation reservation =
         Reservation.builder()
