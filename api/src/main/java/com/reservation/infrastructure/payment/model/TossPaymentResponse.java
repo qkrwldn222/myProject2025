@@ -1,9 +1,13 @@
 package com.reservation.infrastructure.payment.model;
 
 import java.math.BigDecimal;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
+@AllArgsConstructor
+@NoArgsConstructor
 public class TossPaymentResponse {
   private String paymentKey; // 결제 승인 키
   private String orderId; // 주문 ID

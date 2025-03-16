@@ -1,6 +1,7 @@
 package com.reservation.domain;
 
 import com.reservation.application.restaurant.restaurant.model.RestaurantMenuUpdateCommand;
+import com.reservation.common.config.BaseEntity;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.util.Optional;
@@ -12,7 +13,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class RestaurantMenu {
+public class RestaurantMenu extends BaseEntity {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)

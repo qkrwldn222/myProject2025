@@ -1,6 +1,6 @@
 package com.reservation.common.utils;
 
-import java.util.Optional;
+import com.reservation.adapter.security.config.CustomUserDetails;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -41,9 +41,12 @@ public class SecurityUtil {
       return null;
     }
 
-    return Optional.ofNullable(authentication.getPrincipal())
-        .map(Object::toString) // Principal을 문자열로 변환
-        .orElse(null);
+    // Principal이 CustomUserDetails 인스턴스인 경우 userID 반환
+    if (authentication.getPrincipal() instanceof CustomUserDetails) {
+      return ((CustomUserDetails) authentication.getPrincipal()).getUsername(); // userID 반환
+    }
+
+    return null;
   }
 
   /**

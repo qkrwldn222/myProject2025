@@ -2,6 +2,7 @@ package com.reservation.application.payment.service;
 
 import com.reservation.infrastructure.payment.model.TossPaymentResponse;
 import java.math.BigDecimal;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -12,7 +13,11 @@ public class TossPaymentRestService implements PaymentService<TossPaymentRespons
 
   @Override
   public TossPaymentResponse requestPayment(BigDecimal amount, String customerName) {
-    return null;
+    TossPaymentResponse response =
+        new TossPaymentResponse(
+            customerName + amount.toString(), UUID.randomUUID().toString(), "DONE", amount);
+
+    return response;
     //        return tossPaymentExternalRepository.requestPayment( amount, customerName);
   }
 
