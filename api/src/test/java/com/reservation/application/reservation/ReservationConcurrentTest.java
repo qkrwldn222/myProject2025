@@ -37,6 +37,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -63,6 +64,8 @@ public class ReservationConcurrentTest {
 
   @Autowired private RoleJpaRepository roleJpaRepository;
 
+  @Autowired private PasswordEncoder passwordEncoder;
+
   private final ExecutorService executor = Executors.newFixedThreadPool(10);
 
   private final LocalDate reservationDate = LocalDate.now().plusDays(2);
@@ -86,7 +89,7 @@ public class ReservationConcurrentTest {
               User.builder()
                   .userID("user" + i)
                   .username("user" + i)
-                  .password("password")
+                  .password(passwordEncoder.encode("1234"))
                   .role(
                       all.stream()
                           .filter(role -> role.getRoleType().equals(RoleType.USER))
@@ -99,9 +102,9 @@ public class ReservationConcurrentTest {
     User admin =
         userRepository.save(
             User.builder()
-                .userID("admin_user")
-                .username("admin_user")
-                .password("password")
+                .userID("admin_user1")
+                .username("admin_user1")
+                .password(passwordEncoder.encode("12345"))
                 .role(
                     all.stream()
                         .filter(role -> role.getRoleType().equals(RoleType.ADMIN))
@@ -113,9 +116,9 @@ public class ReservationConcurrentTest {
     ownerUser =
         userRepository.save(
             User.builder()
-                .userID("owner_user")
-                .username("owner_user")
-                .password("password")
+                .userID("owner_user1")
+                .username("owner_user1")
+                .password(passwordEncoder.encode("12345"))
                 .role(
                     all.stream()
                         .filter(role -> role.getRoleType().equals(RoleType.STORE_OWNER))
@@ -194,8 +197,7 @@ public class ReservationConcurrentTest {
 
     // 생성된 유저만 삭제
     userRepository.deleteAllInBatch(Arrays.asList(testUsers));
-    userRepository.deleteAllInBatch(
-        userRepository.findAllByUserIDIn(Arrays.asList("admin_user", "owner_user")));
+    userRepository.deleteAllInBatch(userRepository.findAllByUserIDIn(Arrays.asList("admin_user1", "owner_user1")));
 
     // flush()를 한 번에 실행
     /*  userRepository.flush();

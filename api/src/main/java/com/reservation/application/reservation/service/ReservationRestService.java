@@ -136,7 +136,7 @@ public class ReservationRestService implements ReservationService {
         RedisKeyUtil.createUserReservationKey(
             command.getUserId(), command.getReservationDate(), command.getReservationTime());
 
-    // 1. **들어오자마자 좌석 점유 (선점)**
+    // 들어오자마자  점유
     Boolean isLocked =
         redisTemplate
             .opsForValue()
@@ -247,6 +247,14 @@ public class ReservationRestService implements ReservationService {
         restaurantService
             .findBySeatIdAndRestaurantId(command.getSeatId(), command.getRestaurantId())
             .orElseThrow(() -> new ApiException("좌석을 찾을 수 없습니다."));
+
+    boolean isAlreadyReserved = reservationRepository.existsBySeatAndReservationDateAndReservationTime(
+            seat, command.getReservationDate(), command.getReservationTime()
+    );
+
+    if (isAlreadyReserved) {
+      throw new ApiException("이미 해당 시간대에 해당 좌석이 예약되었습니다.", HttpStatus.BAD_REQUEST);
+    }
 
     // 예약 신청 가능한 날짜인지 검증
     if (!isRequestDateAllowed(restaurant, LocalDate.now())) {

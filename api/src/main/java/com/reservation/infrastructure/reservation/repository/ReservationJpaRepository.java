@@ -5,7 +5,10 @@ import com.reservation.domain.Reservation;
 import com.reservation.domain.Restaurant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
+
+import com.reservation.domain.RestaurantSeat;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
@@ -17,4 +20,6 @@ public interface ReservationJpaRepository
 
   List<Reservation> findAllByStatusAndExpiresAtBefore(
       ReservationStatus status, LocalDateTime localDateTime);
+
+  boolean existsBySeatAndReservationDateAndReservationTime(RestaurantSeat seat, LocalDate reservationDate, LocalTime reservationTime);
 }

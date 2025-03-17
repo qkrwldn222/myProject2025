@@ -1,6 +1,8 @@
 package com.reservation.adapter.security.config;
 
 import com.reservation.common.config.ApiException;
+import com.reservation.common.utils.RedisKeyUtil;
+import com.reservation.common.utils.SecurityUtil;
 import com.reservation.domain.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
@@ -40,7 +42,7 @@ public class JwtTokenProvider {
 
   /** JWT 토큰 생성 (Role 포함) */
   public String createToken(String username, String roleCode) {
-    Set<String> existingTokens = redisTemplate.keys("*");
+    Set<String> existingTokens = redisTemplate.keys(RedisKeyUtil.JWT_PREFIX+ "*");
     // 1. 기존 토큰 확인 (사용자가 이미 로그인한 경우 기존 토큰 가져오기)
     String existingToken = null;
     for (String token : existingTokens) {
@@ -74,7 +76,7 @@ public class JwtTokenProvider {
             .compact();
 
     // Redis에 저장 (만료시간 설정)
-    redisTemplate.opsForValue().set(jwt, roleCode, validityInMilliseconds, TimeUnit.MILLISECONDS);
+    redisTemplate.opsForValue().set(RedisKeyUtil.JWT_PREFIX + jwt, roleCode, validityInMilliseconds, TimeUnit.MILLISECONDS);
 
     return jwt;
   }
@@ -102,11 +104,8 @@ public class JwtTokenProvider {
   public boolean validateToken(String token) {
     try {
       Jwts.parserBuilder().setSigningKey(secret).build().parseClaimsJws(token);
-      for (String aa : redisTemplate.keys("*")) {
-        System.out.println(aa);
-      }
       // Redis에 저장된 토큰인지 확인 (없으면 만료된 것)
-      return redisTemplate.hasKey(token);
+      return redisTemplate.hasKey(RedisKeyUtil.JWT_PREFIX+token);
     } catch (JwtException | IllegalArgumentException e) {
       return false;
     }
@@ -117,7 +116,7 @@ public class JwtTokenProvider {
     return Jwts.parserBuilder()
         .setSigningKey(secret)
         .build()
-        .parseClaimsJws(token)
+        .parseClaimsJws(token.replace(RedisKeyUtil.JWT_PREFIX,""))
         .getBody()
         .getSubject();
   }
@@ -152,7 +151,7 @@ public class JwtTokenProvider {
   }
 
   public void revokeTokenByUser(String username) {
-    Set<String> keys = redisTemplate.keys("*"); // Redis에 저장된 모든 키 가져오기
+    Set<String> keys = redisTemplate.keys(RedisKeyUtil.JWT_PREFIX+ "*"); // Redis에 저장된 모든 키 가져오기
     if (keys != null) {
       for (String token : keys) {
         try {
@@ -168,7 +167,7 @@ public class JwtTokenProvider {
   }
 
   public void clearAllJwtTokens() {
-    Set<String> keys = redisTemplate.keys("*");
+    Set<String> keys = redisTemplate.keys(RedisKeyUtil.JWT_PREFIX+ "*");
     if (keys != null) {
       for (String token : keys) {
         try {
