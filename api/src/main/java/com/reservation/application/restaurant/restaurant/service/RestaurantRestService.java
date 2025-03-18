@@ -27,14 +27,15 @@ import org.springframework.util.StringUtils;
 @RequiredArgsConstructor
 public class RestaurantRestService implements RestaurantService {
 
-  private final RestaurantJpaRepository restaurantRepository;
+  private final RestaurantJpaRepositoryAdapter restaurantRepository;
+  private final RestaurantRepository restaurantMybatisRepository;
+
   private final RestaurantImageJpaRepository restaurantImageRepository;
-  private final RestaurantMenuJpaRepository restaurantMenuRepository;
-  private final RestaurantOperatingHoursJpaRepository restaurantOperatingHoursRepository;
-  private final RestaurantSeatJpaRepository restaurantSeatRepository;
+  private final RestaurantMenuJpaRepositoryAdapter restaurantMenuRepository;
+  private final RestaurantOperatingHoursJpaRepositoryAdapter restaurantOperatingHoursRepository;
+  private final RestaurantSeatJpaAdapter restaurantSeatRepository;
   private final RestaurantRegistrationJpaRepository restaurantRegistrationRepository;
   private final UserService userService;
-  private final RestaurantRepository restaurantMybatisRepository;
 
   @Override
   @Transactional
@@ -345,7 +346,6 @@ public class RestaurantRestService implements RestaurantService {
     if (restaurantIds.isEmpty()) {
       return Collections.emptyList();
     }
-
     // 메뉴, 운영시간, 좌석 조회 (foreach 사용)
     List<RestaurantMenuDTO> menus =
         restaurantMybatisRepository.findMenusByRestaurantId(restaurantIds);
@@ -353,7 +353,6 @@ public class RestaurantRestService implements RestaurantService {
         restaurantMybatisRepository.findOperatingHoursByRestaurantId(restaurantIds);
     List<RestaurantSeatDTO> seats =
         restaurantMybatisRepository.findSeatsByRestaurantId(restaurantIds);
-
     // 레스토랑 리스트를 `stream`으로 돌면서 메뉴, 운영시간, 좌석 매핑
     return restaurants.stream()
         .map(

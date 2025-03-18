@@ -12,11 +12,11 @@ import com.reservation.common.config.ApiException;
 import com.reservation.common.enums.*;
 import com.reservation.domain.*;
 import com.reservation.infrastructure.reservation.repository.ReservationJpaRepository;
-import com.reservation.infrastructure.restaurant.restaurant.repository.RestaurantJpaRepository;
-import com.reservation.infrastructure.restaurant.restaurant.repository.RestaurantMenuJpaRepository;
+import com.reservation.infrastructure.restaurant.restaurant.repository.RestaurantMenuSpringDataJpaRepository;
 import com.reservation.infrastructure.restaurant.restaurant.repository.RestaurantOperatingHoursJpaRepository;
-import com.reservation.infrastructure.restaurant.restaurant.repository.RestaurantSeatJpaRepository;
-import com.reservation.infrastructure.role.repository.RoleJpaRepository;
+import com.reservation.infrastructure.restaurant.restaurant.repository.RestaurantSeatSpringDataJpaRepository;
+import com.reservation.infrastructure.restaurant.restaurant.repository.RestaurantSpringDataJpaRepository;
+import com.reservation.infrastructure.role.repository.RoleJpaRepositoryAdapter;
 import com.reservation.infrastructure.user.repository.UserJpaRepository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -54,15 +54,15 @@ public class ReservationConcurrentTest {
 
   @Autowired private UserJpaRepository userRepository;
 
-  @Autowired private RestaurantJpaRepository restaurantRepository;
+  @Autowired private RestaurantSpringDataJpaRepository restaurantRepository;
 
-  @Autowired private RestaurantSeatJpaRepository seatRepository;
+  @Autowired private RestaurantSeatSpringDataJpaRepository seatRepository;
 
-  @Autowired private RestaurantMenuJpaRepository menuRepository;
+  @Autowired private RestaurantMenuSpringDataJpaRepository menuRepository;
 
   @Autowired private RestaurantOperatingHoursJpaRepository hoursRepository;
 
-  @Autowired private RoleJpaRepository roleJpaRepository;
+  @Autowired private RoleJpaRepositoryAdapter roleJpaRepository;
 
   @Autowired private PasswordEncoder passwordEncoder;
 
@@ -197,7 +197,8 @@ public class ReservationConcurrentTest {
 
     // 생성된 유저만 삭제
     userRepository.deleteAllInBatch(Arrays.asList(testUsers));
-    userRepository.deleteAllInBatch(userRepository.findAllByUserIDIn(Arrays.asList("admin_user1", "owner_user1")));
+    userRepository.deleteAllInBatch(
+        userRepository.findAllByUserIDIn(Arrays.asList("admin_user1", "owner_user1")));
 
     // flush()를 한 번에 실행
     /*  userRepository.flush();
@@ -207,51 +208,39 @@ public class ReservationConcurrentTest {
     seatRepository.flush();*/
   }
 
-  /**
-   * Given: 여러 사용자가 동시에 같은 좌석을 예약할 때,
-   * When: 10개의 동시 요청을 실행하면,
-   * Then: 단 하나의 예약만 성공해야 한다.
-   */
+  /** Given: 여러 사용자가 동시에 같은 좌석을 예약할 때, When: 10개의 동시 요청을 실행하면, Then: 단 하나의 예약만 성공해야 한다. */
   @Test
   void ReservationSyncTest() throws InterruptedException {
-
-    // Given: 모든 테스트 유저 정보 출력
-    Arrays.stream(testUsers)
-            .toList()
-            .forEach(user -> System.out.println("User ID ::::::::::::" + user.getId()));
-
+    // Given: 모든 테스트 유저 정보
     int threadCount = 10;
     CountDownLatch latch = new CountDownLatch(threadCount);
     List<Reservation> reservationList = Collections.synchronizedList(new ArrayList<>());
-    ExecutorService executor = Executors.newFixedThreadPool(threadCount);
 
+    ExecutorService executor = Executors.newFixedThreadPool(threadCount);
     for (int i = 0; i < threadCount; i++) {
       int userIndex = i;
       executor.submit(
-              () -> {
-                try {
-                  ReservationRequestCommand command = new ReservationRequestCommand();
-                  command.setRestaurantId(testRestaurant.getId());
-                  command.setSeatId(testSeat.getSeatId());
-                  command.setUserId(testUsers[userIndex].getId());
-                  command.setReservationDate(reservationDate);
-                  command.setReservationTime(reservationTime);
-
-                  // When: 여러 사용자가 동시에 예약을 시도
-                  Reservation reservation = reservationService.createReservation(command);
-                  reservationList.add(reservation);
-                  System.out.println("예약 성공 - user_" + (userIndex + 1));
-                } catch (ApiException e) {
-                  System.out.println("예약 실패 - user_" + (userIndex + 1) + ": " + e.getMessage());
-                } finally {
-                  latch.countDown();
-                }
-              });
+          () -> {
+            try {
+              ReservationRequestCommand command = new ReservationRequestCommand();
+              command.setRestaurantId(testRestaurant.getId());
+              command.setSeatId(testSeat.getSeatId());
+              command.setUserId(testUsers[userIndex].getId());
+              command.setReservationDate(reservationDate);
+              command.setReservationTime(reservationTime);
+              // When: 여러 사용자가 동시에 예약을 시도
+              Reservation reservation = reservationService.createReservation(command);
+              reservationList.add(reservation);
+              System.out.println("예약 성공 - user_" + (userIndex + 1));
+            } catch (ApiException e) {
+              System.out.println("예약 실패 - user_" + (userIndex + 1) + ": " + e.getMessage());
+            } finally {
+              latch.countDown();
+            }
+          });
     }
-
     latch.await();
     executor.shutdown();
-
     // Then: 단 하나의 예약만 성공해야 함 (중복 예약 방지)
     assertEquals(1, reservationList.size(), "예약 중복 발생!");
 
@@ -259,15 +248,13 @@ public class ReservationConcurrentTest {
 
     assertEquals(reservationDate, confirmedReservation.getReservationDate());
     assertEquals(reservationTime, confirmedReservation.getReservationTime());
-
     // 데이터 정리
     reservationJpaRepository.deleteById(confirmedReservation.getReservationId());
   }
 
   /**
-   * Given: 특정 사용자가 예약을 생성할 때,
-   * When: 가게 운영자가 예약을 승인하고 이후 취소하면,
-   * Then: 예약 상태가 CONFIRMED → CANCELED 로 변경되어야 한다.
+   * Given: 특정 사용자가 예약을 생성할 때, When: 가게 운영자가 예약을 승인하고 이후 취소하면, Then: 예약 상태가 CONFIRMED → CANCELED 로
+   * 변경되어야 한다.
    */
   @Test
   @Transactional
@@ -275,7 +262,7 @@ public class ReservationConcurrentTest {
     // Given: 로그인 유저 생성 (가게 운영자로 로그인)
     CustomUserDetails userDetails = new CustomUserDetails(ownerUser);
     UsernamePasswordAuthenticationToken auth =
-            new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
     SecurityContextHolder.getContext().setAuthentication(auth);
 
     System.out.println("ownerUser.getUserID() :::::" + ownerUser.getUserID());
@@ -308,7 +295,6 @@ public class ReservationConcurrentTest {
     SecurityContextHolder.clearContext();
   }
 
-
   @Test
   void ReservationRefundCalTest() {
     // given
@@ -336,9 +322,7 @@ public class ReservationConcurrentTest {
   }
 
   /**
-   * Given: 특정 사용자가 예약을 생성할 때,
-   * When: Redis에 좌석 및 사용자 예약 정보가 저장되고,
-   * Then: 예약 취소 후 Redis 키가 삭제되어야 한다.
+   * Given: 특정 사용자가 예약을 생성할 때, When: Redis에 좌석 및 사용자 예약 정보가 저장되고, Then: 예약 취소 후 Redis 키가 삭제되어야 한다.
    */
   @Test
   @Transactional
@@ -346,7 +330,7 @@ public class ReservationConcurrentTest {
     // Given: 로그인 유저 생성 (Spring Security가 owner_user를 현재 로그인된 사용자로 인식)
     CustomUserDetails userDetails = new CustomUserDetails(ownerUser);
     UsernamePasswordAuthenticationToken auth =
-            new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
     SecurityContextHolder.getContext().setAuthentication(auth);
 
     ReservationRequestCommand command = new ReservationRequestCommand();
@@ -360,21 +344,21 @@ public class ReservationConcurrentTest {
     Reservation reservation = reservationService.createReservation(command);
 
     String seatKey =
-            "reservation:"
-                    + command.getRestaurantId()
-                    + ":"
-                    + command.getSeatId()
-                    + ":"
-                    + command.getReservationDate()
-                    + ":"
-                    + command.getReservationTime();
+        "reservation:"
+            + command.getRestaurantId()
+            + ":"
+            + command.getSeatId()
+            + ":"
+            + command.getReservationDate()
+            + ":"
+            + command.getReservationTime();
     String userKey =
-            "user-reservation:"
-                    + command.getUserId()
-                    + ":"
-                    + command.getReservationDate()
-                    + ":"
-                    + command.getReservationTime();
+        "user-reservation:"
+            + command.getUserId()
+            + ":"
+            + command.getReservationDate()
+            + ":"
+            + command.getReservationTime();
 
     // Then: Redis에 예약 정보 키가 존재해야 함
     assertTrue(redisTemplate.hasKey(seatKey));
@@ -392,9 +376,8 @@ public class ReservationConcurrentTest {
   }
 
   /**
-   * Given: 특정 사용자가 예약을 생성하고 승인 대기 시간이 지나 만료된 경우,
-   * When: 시스템이 예약 만료 취소 메서드를 실행하면,
-   * Then: 예약 상태가 CANCELED 로 변경되어야 한다.
+   * Given: 특정 사용자가 예약을 생성하고 승인 대기 시간이 지나 만료된 경우, When: 시스템이 예약 만료 취소 메서드를 실행하면, Then: 예약 상태가
+   * CANCELED 로 변경되어야 한다.
    */
   @Test
   @Transactional
@@ -424,7 +407,9 @@ public class ReservationConcurrentTest {
     reservationService.cancelExpiredReservations();
 
     // Then: 변경된 상태 확인 (CANCELED로 변경되어야 함)
-    Reservation updatedReservation = reservationJpaRepository.findById(reservation.getReservationId())
+    Reservation updatedReservation =
+        reservationJpaRepository
+            .findById(reservation.getReservationId())
             .orElseThrow(() -> new ApiException("예약을 찾을 수 없습니다."));
     assertEquals(ReservationStatus.CANCELED, updatedReservation.getStatus());
 

@@ -1,4 +1,4 @@
-package com.reservation.infrastructure.code;
+package com.reservation.infrastructure.code.Repository;
 
 import com.reservation.application.code.model.GroupCodeSaveCommand;
 import com.reservation.application.code.model.GroupCodeSearchCommand;

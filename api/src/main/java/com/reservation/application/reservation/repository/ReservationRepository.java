@@ -1,4 +1,4 @@
-package com.reservation.infrastructure.reservation.repository;
+package com.reservation.application.reservation.repository;
 
 import com.reservation.common.enums.ReservationStatus;
 import com.reservation.domain.Reservation;
@@ -8,11 +8,10 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import java.util.Optional;
+import org.springframework.data.jpa.domain.Specification;
 
-public interface ReservationJpaRepository
-    extends JpaRepository<Reservation, Long>, JpaSpecificationExecutor<Reservation> {
+public interface ReservationRepository {
   List<Reservation> findByRestaurantAndReservationDate(Restaurant restaurant, LocalDate date);
 
   List<Reservation> findAllByStatusAndExpiresAtBefore(
@@ -20,4 +19,12 @@ public interface ReservationJpaRepository
 
   boolean existsBySeatAndReservationDateAndReservationTime(
       RestaurantSeat seat, LocalDate reservationDate, LocalTime reservationTime);
+
+  Optional<Reservation> findById(Long id);
+
+  Reservation save(Reservation reservation);
+
+  void deleteById(Long id);
+
+  List<Reservation> findBySpecification(Specification<Reservation> spec);
 }

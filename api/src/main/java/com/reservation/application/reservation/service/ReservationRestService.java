@@ -16,7 +16,7 @@ import com.reservation.common.utils.RedisKeyUtil;
 import com.reservation.common.utils.SecurityUtil;
 import com.reservation.domain.*;
 import com.reservation.infrastructure.payment.model.TossPaymentResponse;
-import com.reservation.infrastructure.reservation.repository.ReservationJpaRepository;
+import com.reservation.infrastructure.reservation.repository.ReservationJpaRepositoryAdapter;
 import com.reservation.infrastructure.reservation.specification.ReservationSpecification;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -46,7 +46,7 @@ public class ReservationRestService implements ReservationService {
 
   private final RedisTemplate<String, String> redisTemplate;
 
-  private final ReservationJpaRepository reservationRepository;
+  private final ReservationJpaRepositoryAdapter reservationRepository;
   private final RestaurantService restaurantService;
   private final UserService userService;
   private final RefundService refundService;
@@ -248,9 +248,9 @@ public class ReservationRestService implements ReservationService {
             .findBySeatIdAndRestaurantId(command.getSeatId(), command.getRestaurantId())
             .orElseThrow(() -> new ApiException("좌석을 찾을 수 없습니다."));
 
-    boolean isAlreadyReserved = reservationRepository.existsBySeatAndReservationDateAndReservationTime(
-            seat, command.getReservationDate(), command.getReservationTime()
-    );
+    boolean isAlreadyReserved =
+        reservationRepository.existsBySeatAndReservationDateAndReservationTime(
+            seat, command.getReservationDate(), command.getReservationTime());
 
     if (isAlreadyReserved) {
       throw new ApiException("이미 해당 시간대에 해당 좌석이 예약되었습니다.", HttpStatus.BAD_REQUEST);
@@ -451,6 +451,6 @@ public class ReservationRestService implements ReservationService {
             currentUserRole,
             ownerRestaurantId);
 
-    return reservationRepository.findAll(spec);
+    return reservationRepository.findBySpecification(spec);
   }
 }

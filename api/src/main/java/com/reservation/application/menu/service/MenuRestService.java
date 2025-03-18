@@ -8,7 +8,7 @@ import com.reservation.application.role.service.RoleService;
 import com.reservation.common.config.ApiException;
 import com.reservation.domain.Menu;
 import com.reservation.domain.Role;
-import com.reservation.infrastructure.menu.repository.MenuJpaRepository;
+import com.reservation.infrastructure.menu.repository.MenuJpaRepositoryAdapter;
 import java.lang.reflect.Proxy;
 import java.util.List;
 import java.util.Optional;
@@ -29,7 +29,7 @@ public class MenuRestService implements MenuService {
 
   private static final Logger logger = LoggerFactory.getLogger(MenuRestService.class);
 
-  private final MenuJpaRepository menuJpaRepository;
+  private final MenuJpaRepositoryAdapter menuJpaRepository;
   private final RoleService roleService;
 
   public List<Menu> findAllMenus() {
@@ -101,7 +101,10 @@ public class MenuRestService implements MenuService {
   }
 
   public void updateMenu(MenuUpdateCommand command) {
-    Menu menu = menuJpaRepository.findMenuById(command.getId());
+    Menu menu =
+        menuJpaRepository
+            .findById(command.getId())
+            .orElseThrow(() -> new ApiException("메뉴를 찾을 수 없습니다."));
     if (ObjectUtils.isEmpty(menu)) {
       logger.info("메뉴를 찾을 수 없습니다. :" + command.getId());
       throw new ApiException("메뉴를 찾을 수 없습니다. :" + command.getId());
