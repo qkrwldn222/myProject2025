@@ -9,7 +9,7 @@ import com.reservation.common.utils.SecurityUtil;
 import com.reservation.domain.KakaoUserInfo;
 import com.reservation.domain.Role;
 import com.reservation.domain.User;
-import com.reservation.infrastructure.role.repository.RoleJpaRepository;
+import com.reservation.infrastructure.role.repository.RoleJpaRepositoryAdapter;
 import com.reservation.infrastructure.user.repository.UserJpaRepository;
 import java.time.Duration;
 import java.util.List;
@@ -33,7 +33,7 @@ public class UserRestService implements UserService {
 
   private final RedisTemplate<String, Object> redisTemplate;
   private final UserJpaRepository userRepository;
-  private final RoleJpaRepository roleRepository;
+  private final RoleJpaRepositoryAdapter roleRepository;
   private final UserKakaoRepository userKakaoRepository;
   private final EmailService emailService; // 이메일 전송 서비스
 

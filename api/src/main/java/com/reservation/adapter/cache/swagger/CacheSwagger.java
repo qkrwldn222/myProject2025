@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-@Tag(name = "0. 캐쉬", description = "캐쉬 관련 API")
+@Tag(name = "캐쉬", description = "캐쉬 관련 API")
 @RequestMapping("/cache")
 public interface CacheSwagger {
 
@@ -121,29 +121,30 @@ public interface CacheSwagger {
   @PostMapping("/reservation")
   ResponseEntity<ApiResponseWrapper<Void>> clearReservationCache();
 
-    @Operation(
-            summary = "웨이팅 정보 캐시 초기화",
-            description = "웨이팅 정보 캐시를 초기화 합니다.",
-            responses = {
-                    @ApiResponse(
-                            responseCode = "200",
-                            description = "웨이팅 정보 정보 캐시 초기화 성공",
-                            content =
-                            @Content(
-                                    mediaType = "application/json",
-                                    schema = @Schema(implementation = ApiResponse.class),
-                                    examples =
-                                    @ExampleObject(
-                                            value =
-                                                    """
+  @Operation(
+      summary = "웨이팅 정보 캐시 초기화",
+      description = "웨이팅 정보 캐시를 초기화 합니다.",
+      responses = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "웨이팅 정보 정보 캐시 초기화 성공",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ApiResponse.class),
+                    examples =
+                        @ExampleObject(
+                            value =
+                                """
                                         {
                                           "message": "웨이팅 정보 캐시를 초기화 했습니다.",
                                           "state": "SUCCESS"
                                         }
                                         """))),
-                    @ApiResponse(responseCode = "500", description = "서버 내부 오류")
-            })
-    @SecurityRequirement(name = "BearerAuth")
-    @PostMapping("/waiting")
-    ResponseEntity<ApiResponseWrapper<Void>> clearWaiting(@RequestParam("restaurantId") Long restaurantId);
+        @ApiResponse(responseCode = "500", description = "서버 내부 오류")
+      })
+  @SecurityRequirement(name = "BearerAuth")
+  @PostMapping("/waiting")
+  ResponseEntity<ApiResponseWrapper<Void>> clearWaiting(
+      @RequestParam("restaurantId") Long restaurantId);
 }

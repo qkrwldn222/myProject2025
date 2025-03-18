@@ -9,7 +9,6 @@ public final class RedisKeyUtil {
   private static final String USER_RESERVATION_PREFIX = "user-reservation:";
   private static final String WAITING_QUEUE_PREFIX = "restaurant:%d:waiting_queue";
 
-
   private RedisKeyUtil() {
     // 인스턴스화 방지
   }

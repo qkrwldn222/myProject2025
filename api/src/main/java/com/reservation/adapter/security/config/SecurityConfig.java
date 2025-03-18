@@ -66,7 +66,7 @@ public class SecurityConfig {
                       request -> {
                         Authentication authentication =
                             SecurityContextHolder.getContext().getAuthentication();
-
+                        // 토큰의 사용자 권한을 가져 옴
                         String role = getUserRoleRankFromSecurityContext();
 
                         System.out.println("현재 요청의 인증 객체: " + authentication);

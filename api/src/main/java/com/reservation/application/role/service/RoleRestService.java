@@ -2,7 +2,7 @@ package com.reservation.application.role.service;
 
 import com.reservation.application.role.model.RoleSearchCommand;
 import com.reservation.domain.Role;
-import com.reservation.infrastructure.role.repository.RoleJpaRepository;
+import com.reservation.infrastructure.role.repository.RoleJpaRepositoryAdapter;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
@@ -15,10 +15,10 @@ import org.springframework.util.StringUtils;
 @Service
 public class RoleRestService implements RoleService {
 
-  private final RoleJpaRepository roleJpaRepository;
+  private final RoleJpaRepositoryAdapter roleJpaRepository;
   private final RoleService proxyInstance;
 
-  public RoleRestService(RoleJpaRepository roleJpaRepository) {
+  public RoleRestService(RoleJpaRepositoryAdapter roleJpaRepository) {
     this.roleJpaRepository = roleJpaRepository;
     this.proxyInstance = createProxy();
   }

@@ -9,7 +9,6 @@ import com.reservation.common.config.EnableGlobalExceptionHandling;
 import com.reservation.common.response.ApiResponseWrapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -50,7 +49,8 @@ public class CacheRestController implements CacheSwagger {
   }
 
   @Override
-  public ResponseEntity<ApiResponseWrapper<Void>> clearWaiting(@RequestParam("restaurantId") Long restaurantId) {
+  public ResponseEntity<ApiResponseWrapper<Void>> clearWaiting(
+      @RequestParam("restaurantId") Long restaurantId) {
     // 레스토랑 기준 웨이팅 정보를 초기화
     sseEmitterService.clearEmittersByRestaurant(restaurantId);
 

@@ -4,7 +4,7 @@ import com.reservation.application.code.mapper.CodeAppResponseMapper;
 import com.reservation.application.code.model.*;
 import com.reservation.application.code.repository.CodeRepository;
 import com.reservation.domain.Code;
-import com.reservation.infrastructure.code.CodeJpaRepository;
+import com.reservation.infrastructure.code.Repository.CodeJpaRepositoryAdapter;
 import com.reservation.infrastructure.code.model.GroupCodeDTO;
 import java.lang.reflect.Proxy;
 import java.util.List;
@@ -21,7 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class CodeRestService implements CodeService {
   private static final Logger logger = LoggerFactory.getLogger(CodeRestService.class);
 
-  private final CodeJpaRepository codeJpaRepository;
+  private final CodeJpaRepositoryAdapter codeJpaRepository;
   private final CodeRepository codeRepository;
 
   public List<Code> findAllCodes() {
