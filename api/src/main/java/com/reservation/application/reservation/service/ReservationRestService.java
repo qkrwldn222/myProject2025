@@ -242,6 +242,13 @@ public class ReservationRestService implements ReservationService {
             .findById(command.getRestaurantId())
             .orElseThrow(() -> new ApiException("레스토랑을 찾을 수 없습니다."));
 
+    RestaurantOperatingHours restaurantOperatingHours =
+        restaurantService
+            .findByRestaurantIdAndDayOfWeek(
+                command.getRestaurantId(),
+                DateTimeUtils.getDayOfWeekEnum(command.getReservationDate()))
+            .orElseThrow(() -> new ApiException("해당 레스토랑의 운영 시간을 찾을 수 없습니다."));
+
     User user =
         userService
             .findById(command.getUserId())
@@ -295,6 +302,10 @@ public class ReservationRestService implements ReservationService {
             .seat(seat)
             .reservationDate(command.getReservationDate())
             .reservationTime(command.getReservationTime())
+            .reservationEndTime(
+                command
+                    .getReservationTime()
+                    .plusMinutes(restaurantOperatingHours.getReservationInterval()))
             .status(
                 restaurant.getAutoConfirm() && depositAmount.equals(BigDecimal.ZERO)
                     ? ReservationStatus.CONFIRMED
@@ -321,6 +332,11 @@ public class ReservationRestService implements ReservationService {
     reservationRepository.save(reservation);
 
     return reservation;
+  }
+
+  @Override
+  public Optional<Reservation> findById(Long reservationId) {
+    return reservationRepository.findById(reservationId);
   }
 
   @Scheduled(fixedRate = 60000) // 1분마다 실행

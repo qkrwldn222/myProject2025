@@ -1,5 +1,7 @@
 package com.reservation.common.utils;
 
+import com.reservation.common.enums.DayOfWeekEnum;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -123,5 +125,21 @@ public class DateTimeUtils {
     }
 
     return false;
+  }
+
+  public static DayOfWeekEnum getDayOfWeekEnum(LocalDate reservationDate) {
+    // Java 기본 DayOfWeek (MONDAY~SUNDAY)
+    DayOfWeek dayOfWeek = reservationDate.getDayOfWeek();
+
+    // Java DayOfWeek을 우리가 만든 DayOfWeekEnum으로 변환
+    return switch (dayOfWeek) {
+      case MONDAY -> DayOfWeekEnum.MON;
+      case TUESDAY -> DayOfWeekEnum.TUE;
+      case WEDNESDAY -> DayOfWeekEnum.WED;
+      case THURSDAY -> DayOfWeekEnum.THU;
+      case FRIDAY -> DayOfWeekEnum.FRI;
+      case SATURDAY -> DayOfWeekEnum.SAT;
+      case SUNDAY -> DayOfWeekEnum.SUN;
+    };
   }
 }

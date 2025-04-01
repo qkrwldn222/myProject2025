@@ -15,6 +15,7 @@ public class RestaurantOperatingHoursCreateCommand implements BaseValidation {
   private LocalTime openTime;
   private LocalTime closeTime;
   private Boolean isHoliday;
+  private int reservationInterval;
 
   @Override
   public void validate() {

@@ -5,6 +5,7 @@ import com.reservation.application.restaurant.restaurant.model.*;
 import com.reservation.application.restaurant.restaurant.repository.RestaurantRepository;
 import com.reservation.application.user.service.UserService;
 import com.reservation.common.config.ApiException;
+import com.reservation.common.enums.DayOfWeekEnum;
 import com.reservation.common.enums.RegistrationStatus;
 import com.reservation.domain.*;
 import com.reservation.infrastructure.restaurant.restaurant.model.RestaurantMenuDTO;
@@ -98,6 +99,7 @@ public class RestaurantRestService implements RestaurantService {
                           .dayOfWeek(hourCmd.getDayOfWeek())
                           .openTime(hourCmd.getOpenTime())
                           .closeTime(hourCmd.getCloseTime())
+                          .reservationInterval(hourCmd.getReservationInterval())
                           .isHoliday(
                               hourCmd.getIsHoliday() != null ? hourCmd.getIsHoliday() : false)
                           .build())
@@ -272,6 +274,7 @@ public class RestaurantRestService implements RestaurantService {
                           .openTime(createCmd.getOpenTime())
                           .closeTime(createCmd.getCloseTime())
                           .isHoliday(createCmd.getIsHoliday())
+                          .reservationInterval(createCmd.getReservationInterval())
                           .build())
               .toList();
       restaurantOperatingHoursRepository.saveAll(newOperatingHours);
@@ -384,5 +387,12 @@ public class RestaurantRestService implements RestaurantService {
   @Override
   public Optional<RestaurantSeat> findBySeatIdAndRestaurantId(Long seatId, Long restaurantId) {
     return restaurantSeatRepository.findBySeatIdAndRestaurantId(seatId, restaurantId);
+  }
+
+  @Override
+  public Optional<RestaurantOperatingHours> findByRestaurantIdAndDayOfWeek(
+      Long restaurantId, DayOfWeekEnum dayOfWeekEnum) {
+    return restaurantOperatingHoursRepository.findByRestaurantIdAndDayOfWeek(
+        restaurantId, dayOfWeekEnum);
   }
 }

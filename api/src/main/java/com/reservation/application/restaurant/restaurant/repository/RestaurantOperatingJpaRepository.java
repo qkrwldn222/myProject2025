@@ -1,5 +1,6 @@
 package com.reservation.application.restaurant.restaurant.repository;
 
+import com.reservation.common.enums.DayOfWeekEnum;
 import com.reservation.domain.RestaurantOperatingHours;
 import java.util.List;
 import java.util.Optional;
@@ -13,4 +14,7 @@ public interface RestaurantOperatingJpaRepository {
   Optional<RestaurantOperatingHours> findById(Long id);
 
   void deleteAllById(List<Long> ids);
+
+  Optional<RestaurantOperatingHours> findByRestaurantIdAndDayOfWeek(
+      Long restaurantId, DayOfWeekEnum dayOfWeekEnum);
 }

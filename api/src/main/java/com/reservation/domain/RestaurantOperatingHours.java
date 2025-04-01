@@ -6,12 +6,14 @@ import jakarta.persistence.*;
 import java.time.LocalTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "restaurant_operating_hours", catalog = "service")
 @NoArgsConstructor
 @AllArgsConstructor
+@Getter
 @Builder
 public class RestaurantOperatingHours {
 
@@ -35,6 +37,9 @@ public class RestaurantOperatingHours {
 
   @Column(nullable = false)
   private Boolean isHoliday;
+
+  @Column(name = "reservation_interval")
+  private int reservationInterval;
 
   public void update(RestaurantOperatingHoursUpdateCommand command) {
     this.dayOfWeek = command.getDayOfWeek();

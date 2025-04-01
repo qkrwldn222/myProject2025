@@ -4,6 +4,7 @@ import com.reservation.application.reservation.model.ReservationRequestCommand;
 import com.reservation.application.reservation.model.ReservationSearchCommand;
 import com.reservation.domain.Reservation;
 import java.util.List;
+import java.util.Optional;
 
 public interface ReservationService {
 
@@ -34,4 +35,6 @@ public interface ReservationService {
    * @return reservation 예약
    */
   List<Reservation> findReservations(ReservationSearchCommand command);
+
+  Optional<Reservation> findById(Long reservationId);
 }

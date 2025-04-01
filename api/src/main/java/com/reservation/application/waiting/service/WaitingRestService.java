@@ -7,6 +7,8 @@ import com.reservation.common.utils.RedisKeyUtil;
 import com.reservation.common.utils.SecurityUtil;
 import com.reservation.domain.Restaurant;
 import com.reservation.domain.User;
+import com.reservation.domain.WaitingHistory;
+import com.reservation.infrastructure.waiting.repository.WaitingHistoryJpaRepositoryAdapter;
 import java.util.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -22,6 +24,7 @@ public class WaitingRestService implements WaitingService {
   private final SseEmitterService sseEmitterService;
   private final UserService userService;
   private final RestaurantService restaurantService;
+  private final WaitingHistoryJpaRepositoryAdapter waitingHistoryJpaRepositoryAdapter;
 
   @Override
   public List<String> getWaitingList(Long restaurantId) {
@@ -182,6 +185,11 @@ public class WaitingRestService implements WaitingService {
     }
     int position = waitingUsers.indexOf(userId);
     return (position != -1) ? position + 1 : -1;
+  }
+
+  @Override
+  public Optional<WaitingHistory> findById(Long waitingHistoryId) {
+    return waitingHistoryJpaRepositoryAdapter.findById(waitingHistoryId);
   }
 
   /**
