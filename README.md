@@ -22,7 +22,7 @@
 - **API 문서화**: Swagger 3.x (OpenAPI)
 - **로그 관리**: Logback + ELK(Stack)
 - **인증/권한 관리**: Spring Security + JWT
-(**메시지 브로커**: Kafka (예약 알림 및 상태 업데이트) 안 할 가능성 90% )
+- **메시지 브로커**: Kafka (예약 알림 및 상태 업데이트)
 
 #### 2) 프론트엔드
 - **프레임워크**: React 18 (TypeScript 적용)
