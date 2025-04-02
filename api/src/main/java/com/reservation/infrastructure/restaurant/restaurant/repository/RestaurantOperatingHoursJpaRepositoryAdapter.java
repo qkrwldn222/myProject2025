@@ -1,6 +1,7 @@
 package com.reservation.infrastructure.restaurant.restaurant.repository;
 
 import com.reservation.application.restaurant.restaurant.repository.RestaurantOperatingJpaRepository;
+import com.reservation.common.enums.DayOfWeekEnum;
 import com.reservation.domain.RestaurantOperatingHours;
 import java.util.List;
 import java.util.Optional;
@@ -32,5 +33,12 @@ public class RestaurantOperatingHoursJpaRepositoryAdapter
   @Override
   public void deleteAllById(List<Long> ids) {
     restaurantOperatingHoursJpaRepository.deleteAllById(ids);
+  }
+
+  @Override
+  public Optional<RestaurantOperatingHours> findByRestaurantIdAndDayOfWeek(
+      Long restaurantId, DayOfWeekEnum dayOfWeekEnum) {
+    return restaurantOperatingHoursJpaRepository.findByRestaurantIdAndDayOfWeek(
+        restaurantId, dayOfWeekEnum);
   }
 }

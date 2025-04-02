@@ -9,6 +9,7 @@ import com.reservation.application.waiting.service.WaitingRestService;
 import com.reservation.common.enums.*;
 import com.reservation.common.utils.RedisKeyUtil;
 import com.reservation.domain.*;
+import com.reservation.infrastructure.waiting.repository.WaitingHistoryJpaRepositoryAdapter;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
@@ -31,7 +32,7 @@ public class WaitingServiceTest {
   private SseEmitterService sseEmitterService;
   private UserService userService;
   private RestaurantService restaurantService;
-
+  private WaitingHistoryJpaRepositoryAdapter waitingHistoryJpaRepositoryAdapter;
   private User testUser1, testUser2, testOwner;
   private Restaurant testRestaurant;
 
@@ -49,7 +50,12 @@ public class WaitingServiceTest {
     userService = Mockito.mock(UserService.class);
     restaurantService = Mockito.mock(RestaurantService.class);
     waitingService =
-        new WaitingRestService(redisTemplate, sseEmitterService, userService, restaurantService);
+        new WaitingRestService(
+            redisTemplate,
+            sseEmitterService,
+            userService,
+            restaurantService,
+            waitingHistoryJpaRepositoryAdapter);
 
     // Redis ListOperations Mock 설정
     Mockito.doReturn(listOperations).when(redisTemplate).opsForList();

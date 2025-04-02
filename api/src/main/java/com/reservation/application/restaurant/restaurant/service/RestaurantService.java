@@ -1,7 +1,9 @@
 package com.reservation.application.restaurant.restaurant.service;
 
 import com.reservation.application.restaurant.restaurant.model.*;
+import com.reservation.common.enums.DayOfWeekEnum;
 import com.reservation.domain.Restaurant;
+import com.reservation.domain.RestaurantOperatingHours;
 import com.reservation.domain.RestaurantSeat;
 import java.util.List;
 import java.util.Optional;
@@ -93,4 +95,7 @@ public interface RestaurantService {
    * @return RestaurantSeat 도메인
    */
   Optional<RestaurantSeat> findBySeatIdAndRestaurantId(Long seatId, Long restaurantId);
+
+  Optional<RestaurantOperatingHours> findByRestaurantIdAndDayOfWeek(
+      Long restaurantId, DayOfWeekEnum dayOfWeekEnum);
 }

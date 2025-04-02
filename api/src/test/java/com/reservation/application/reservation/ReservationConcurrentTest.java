@@ -216,18 +216,22 @@ public class ReservationConcurrentTest {
     CountDownLatch latch = new CountDownLatch(threadCount);
     List<Reservation> reservationList = Collections.synchronizedList(new ArrayList<>());
 
+    // 쓰레드 생성 10 동시 호출 준비
     ExecutorService executor = Executors.newFixedThreadPool(threadCount);
     for (int i = 0; i < threadCount; i++) {
       int userIndex = i;
+
       executor.submit(
           () -> {
             try {
+              // 예약 요청 객체 생성
               ReservationRequestCommand command = new ReservationRequestCommand();
               command.setRestaurantId(testRestaurant.getId());
               command.setSeatId(testSeat.getSeatId());
               command.setUserId(testUsers[userIndex].getId());
               command.setReservationDate(reservationDate);
               command.setReservationTime(reservationTime);
+
               // When: 여러 사용자가 동시에 예약을 시도
               Reservation reservation = reservationService.createReservation(command);
               reservationList.add(reservation);
@@ -265,8 +269,7 @@ public class ReservationConcurrentTest {
         new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
     SecurityContextHolder.getContext().setAuthentication(auth);
 
-    System.out.println("ownerUser.getUserID() :::::" + ownerUser.getUserID());
-
+    // 예약 요청 커맨드 객체
     ReservationRequestCommand command = new ReservationRequestCommand();
     command.setRestaurantId(testRestaurant.getId());
     command.setSeatId(testSeat.getSeatId());
@@ -385,19 +388,24 @@ public class ReservationConcurrentTest {
     // Given: 예약 생성 (유효한 예약) / 가게에서 자동승인 옵션 끄기
     RestaurantUpdateCommand restaurantUpdateCommand = new RestaurantUpdateCommand();
     restaurantUpdateCommand.setAutoConfirm(false);
+
     testRestaurant.update(restaurantUpdateCommand);
     restaurantRepository.save(testRestaurant);
 
+    // 예약 요청 커맨드 객체 셋팅
     ReservationRequestCommand command = new ReservationRequestCommand();
     command.setRestaurantId(testRestaurant.getId());
     command.setSeatId(testSeat.getSeatId());
     command.setUserId(testUsers[0].getId());
     command.setReservationDate(reservationDate);
     command.setReservationTime(reservationTime);
+
+    // 예약 함수 실행
     Reservation reservation = reservationService.createReservation(command);
 
     // Given: 예약 승인 대기 시간 설정 (즉시 만료되도록 설정)
     reservation.setExpiresAt(LocalDateTime.now().minusMinutes(1));
+
     reservationJpaRepository.save(reservation);
 
     // Then: 예약이 PENDING 상태인지 확인
@@ -411,6 +419,7 @@ public class ReservationConcurrentTest {
         reservationJpaRepository
             .findById(reservation.getReservationId())
             .orElseThrow(() -> new ApiException("예약을 찾을 수 없습니다."));
+
     assertEquals(ReservationStatus.CANCELED, updatedReservation.getStatus());
 
     // 데이터 정리

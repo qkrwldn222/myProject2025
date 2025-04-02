@@ -5,6 +5,7 @@ import com.reservation.application.refund.service.RefundService;
 import com.reservation.application.reservation.model.ReservationRequestCommand;
 import com.reservation.application.reservation.model.ReservationSearchCommand;
 import com.reservation.application.restaurant.restaurant.service.RestaurantService;
+import com.reservation.application.usecase.ReservationEventUseCase;
 import com.reservation.application.user.service.UserService;
 import com.reservation.common.config.ApiException;
 import com.reservation.common.enums.ReservationOpenType;
@@ -50,6 +51,7 @@ public class ReservationRestService implements ReservationService {
   private final RestaurantService restaurantService;
   private final UserService userService;
   private final RefundService refundService;
+  private final ReservationEventUseCase reservationEventUseCase;
 
   private final PaymentService paymentService;
 
@@ -136,7 +138,7 @@ public class ReservationRestService implements ReservationService {
         RedisKeyUtil.createUserReservationKey(
             command.getUserId(), command.getReservationDate(), command.getReservationTime());
 
-    // 들어오자마자  점유
+    // 들어오자마자  점유 RedisLock
     Boolean isLocked =
         redisTemplate
             .opsForValue()
@@ -169,9 +171,11 @@ public class ReservationRestService implements ReservationService {
       // 4. 예약 저장
       Reservation reservation = saveReservation(command);
 
-      // 5. 사용자 예약 정보 저장
-      redisTemplate.opsForValue().set(userKey, "reserved", EXPIRED_TIME, TimeUnit.MINUTES);
+      // 5.kafka 호출
+      reservationEventUseCase.createReservation(reservation);
 
+      // 6. 사용자 예약 정보 저장
+      redisTemplate.opsForValue().set(userKey, "reserved", EXPIRED_TIME, TimeUnit.MINUTES);
       return reservation;
     } catch (Exception e) {
       // 예외 발생 시 **즉시 점유 해제**
@@ -238,6 +242,13 @@ public class ReservationRestService implements ReservationService {
             .findById(command.getRestaurantId())
             .orElseThrow(() -> new ApiException("레스토랑을 찾을 수 없습니다."));
 
+    RestaurantOperatingHours restaurantOperatingHours =
+        restaurantService
+            .findByRestaurantIdAndDayOfWeek(
+                command.getRestaurantId(),
+                DateTimeUtils.getDayOfWeekEnum(command.getReservationDate()))
+            .orElseThrow(() -> new ApiException("해당 레스토랑의 운영 시간을 찾을 수 없습니다."));
+
     User user =
         userService
             .findById(command.getUserId())
@@ -291,6 +302,10 @@ public class ReservationRestService implements ReservationService {
             .seat(seat)
             .reservationDate(command.getReservationDate())
             .reservationTime(command.getReservationTime())
+            .reservationEndTime(
+                command
+                    .getReservationTime()
+                    .plusMinutes(restaurantOperatingHours.getReservationInterval()))
             .status(
                 restaurant.getAutoConfirm() && depositAmount.equals(BigDecimal.ZERO)
                     ? ReservationStatus.CONFIRMED
@@ -317,6 +332,11 @@ public class ReservationRestService implements ReservationService {
     reservationRepository.save(reservation);
 
     return reservation;
+  }
+
+  @Override
+  public Optional<Reservation> findById(Long reservationId) {
+    return reservationRepository.findById(reservationId);
   }
 
   @Scheduled(fixedRate = 60000) // 1분마다 실행

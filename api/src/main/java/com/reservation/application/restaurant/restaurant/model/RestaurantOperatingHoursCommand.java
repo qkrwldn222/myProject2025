@@ -12,4 +12,5 @@ public class RestaurantOperatingHoursCommand {
   private LocalTime openTime;
   private LocalTime closeTime;
   private Boolean isHoliday;
+  private int reservationInterval;
 }

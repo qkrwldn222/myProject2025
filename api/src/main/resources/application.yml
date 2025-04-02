@@ -1,4 +1,28 @@
 spring:
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 15MB
+  kafka:
+    consumer:
+      auto-offset-reset: earliest  # 가장 오래된 메시지부터 읽기
+      group-id: reservation-group
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "com.reservation.infrastructure.kafka.model"
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    bootstrap-servers: localhost:9092  #Docker 환경에서 내부 접근
+    admin:
+      fail-fast: false  # KafkaAdmin이 실패할 경우 즉시 종료하지 않음
+      auto-create: false  # KafkaAdmin이 자동으로 토픽을 만들지 않도록 설정
+    properties:
+      request.timeout.ms: 60000  # 타임아웃 증가 (기본 30초 → 60초)
+      retry.backoff.ms: 1000      # 재시도 간격 (1초)
+
   aop:
     proxy-target-class: true
   application:
@@ -78,7 +102,7 @@ mail:
   debug: true
 
 file:
-  upload-dir : C:\image
+  upload-dir : C:/image
 
 toss:
   secret-key: "test_sk_xxxx"

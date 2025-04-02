@@ -23,4 +23,7 @@ public class RestaurantOperatingHoursCreateRequest {
 
   @Schema(description = "휴무 여부 (true: 휴무, false: 영업)", example = "false")
   private Boolean isHoliday;
+
+  @Schema(description = "예약 단위", example = "30 , 60")
+  private int reservation_interval;
 }

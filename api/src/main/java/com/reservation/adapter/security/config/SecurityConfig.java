@@ -6,6 +6,7 @@ import com.reservation.domain.Menu;
 import com.reservation.domain.Role;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -38,23 +39,27 @@ public class SecurityConfig {
 
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-    http.csrf(csrf -> csrf.disable()) // CSRF 비활성화
+    http.csrf(csrf -> csrf.disable())
         .sessionManagement(
-            session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 세션 관리 X
+            session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .securityContext(securityContext -> securityContext.requireExplicitSave(false))
         .authorizeHttpRequests(
             auth -> {
-              // Swagger & OpenAPI 허용
               auth.requestMatchers(
-                      "/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html", "/favicon.ico")
-                  .permitAll();
-              auth.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll();
-              // 회원가입 & 로그인 허용
-              auth.requestMatchers(
-                      "/auth/signup", "/auth/login", "/auth/kakao/signup", "/auth/logout")
+                      "/swagger-ui/**",
+                      "/v3/api-docs/**",
+                      "/swagger-ui.html",
+                      "/favicon.ico",
+                      "/uploads/**",
+                      "/auth/signup",
+                      "/auth/login",
+                      "/auth/kakao/signup",
+                      "/auth/logout")
                   .permitAll();
 
-              // Local or dev 환경에서만 임시 토큰 발급 허용
+              auth.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll();
+
+              // local or dev 환경에서 임시 토큰 허용
               if (Arrays.asList(environment.getActiveProfiles()).contains("local")
                   || Arrays.asList(environment.getActiveProfiles()).contains("dev")) {
                 auth.requestMatchers("/auth/temp/token").permitAll();
@@ -62,14 +67,34 @@ public class SecurityConfig {
                 auth.requestMatchers("/auth/temp/token").denyAll();
               }
 
+              // 커스텀 인증 로직은 최하단에 위치시키고,
+              // 이미 permitAll된 URL은 추가로 검사하지 않도록 로직 추가
               auth.requestMatchers(
                       request -> {
+                        String path = request.getRequestURI();
+
+                        // permitAll로 허용된 경로는 바로 통과
+                        List<String> permitAllPaths =
+                            List.of(
+                                "/swagger-ui",
+                                "/v3/api-docs",
+                                "/favicon.ico",
+                                "/uploads/",
+                                "/auth/signup",
+                                "/auth/login",
+                                "/auth/kakao/signup",
+                                "/auth/logout",
+                                "/error");
+
+                        boolean isPermitAll = permitAllPaths.stream().anyMatch(path::startsWith);
+                        if (isPermitAll) return true; // 이미 허용했으므로 검사 생략
+
                         Authentication authentication =
                             SecurityContextHolder.getContext().getAuthentication();
+
                         // 토큰의 사용자 권한을 가져 옴
                         String role = getUserRoleRankFromSecurityContext();
 
-                        System.out.println("현재 요청의 인증 객체: " + authentication);
                         if (authentication == null || !authentication.isAuthenticated()) {
                           return false;
                         }
@@ -92,11 +117,11 @@ public class SecurityConfig {
                             return true;
                           }
                         }
+
                         throw new ApiException("접근 권한이 없습니다.");
                       })
                   .authenticated();
 
-              // 그 외 모든 요청은 인증 필요
               auth.anyRequest().authenticated();
             })
         .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

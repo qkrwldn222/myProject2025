@@ -40,6 +40,9 @@ public class Reservation {
   @Column(name = "reservation_time", nullable = false)
   private LocalTime reservationTime;
 
+  @Column(name = "reservation_end_time", nullable = false)
+  private LocalTime reservationEndTime;
+
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
   private ReservationStatus status;
