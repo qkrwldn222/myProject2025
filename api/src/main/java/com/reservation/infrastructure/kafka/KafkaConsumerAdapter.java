@@ -2,7 +2,7 @@ package com.reservation.infrastructure.kafka;
 
 import com.reservation.application.usecase.ReservationEventUseCase;
 import com.reservation.domain.ReservationEvent;
-import com.reservation.domain.Review;
+import com.reservation.infrastructure.kafka.model.ReviewMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -44,15 +44,15 @@ public class KafkaConsumerAdapter {
   @KafkaListener(
       topics = {"reservation.reviewed"},
       groupId = "notification-group")
-  public void consumeReview(Review review) {
+  public void consumeReview(ReviewMessage message) {
     try {
-      log.info("Kafka 메시지 수신: {}", review);
+      log.info("Kafka 메시지 수신: {}", message);
     } catch (Exception e) {
       log.error("Kafka Consumer 오류 발생: {}, 메시지를 DLQ로 이동", e.getMessage());
 
       // DLQ로 보낼 때 retry-count=0으로 초기화
       kafkaTemplate.send(
-          MessageBuilder.withPayload(review)
+          MessageBuilder.withPayload(message)
               .setHeader(KafkaHeaders.TOPIC, "reservation.dlq")
               .setHeader("retry-count", 0)
               .build());

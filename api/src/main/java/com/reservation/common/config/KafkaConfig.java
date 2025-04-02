@@ -1,7 +1,7 @@
 package com.reservation.common.config;
 
 import com.reservation.domain.ReservationEvent;
-import com.reservation.domain.Review;
+import com.reservation.infrastructure.kafka.model.ReviewMessage;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.kafka.clients.admin.NewTopic;
@@ -39,7 +39,7 @@ public class KafkaConfig {
   }
 
   @Bean
-  public ProducerFactory<String, Review> reviewProducerFactory() {
+  public ProducerFactory<String, ReviewMessage> reviewProducerFactory() {
     Map<String, Object> configProps = new HashMap<>();
     configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
     configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
@@ -48,7 +48,7 @@ public class KafkaConfig {
   }
 
   @Bean
-  public KafkaTemplate<String, Review> reviewKafkaTemplate() {
+  public KafkaTemplate<String, ReviewMessage> reviewKafkaTemplate() {
     return new KafkaTemplate<>(reviewProducerFactory());
   }
 
