@@ -60,6 +60,12 @@ public class ReservationRestService implements ReservationService {
   public void cancelReservation(Long reservationId) {
     String currentUserId = SecurityUtil.getCurrentUserId();
 
+    Long currentUserPk =
+        userService
+            .findByUserId(currentUserId)
+            .map(User::getId)
+            .orElseThrow(() -> new ApiException("로그인 사용자를 찾을 수 없습니다.", HttpStatus.UNAUTHORIZED));
+
     Reservation reservation =
         reservationRepository
             .findById(reservationId)
@@ -76,7 +82,7 @@ public class ReservationRestService implements ReservationService {
             .orElseThrow(() -> new ApiException("가게 운영자를 찾을 수 없습니다.", HttpStatus.BAD_REQUEST));
 
     if (!(user.getUserID().equals(currentUserId)
-        || reservation.getUser().getUserID().equals(currentUserId)
+        || reservation.getUserId().equals(currentUserPk)
         || userService.isAdmin())) throw new ApiException("예약 취소 권한이 없습니다.", HttpStatus.FORBIDDEN);
 
     if (reservation.getStatus().equals(ReservationStatus.CANCELED)) {
@@ -114,7 +120,7 @@ public class ReservationRestService implements ReservationService {
             reservation.getReservationTime());
     String userKey =
         RedisKeyUtil.createUserReservationKey(
-            reservation.getUser().getId(),
+            reservation.getUserId(),
             reservation.getReservationDate(),
             reservation.getReservationTime());
 
@@ -283,13 +289,12 @@ public class ReservationRestService implements ReservationService {
 
     // 선약금이 있는 경우 결제 먼저 수행
     BigDecimal depositAmount = restaurant.getDepositAmount();
+    boolean hasDeposit = depositAmount != null && depositAmount.compareTo(BigDecimal.ZERO) > 0;
 
     TossPaymentResponse requestPayment = new TossPaymentResponse();
-    if (depositAmount != null && depositAmount.compareTo(BigDecimal.ZERO) > 0) {
-      Optional<User> User = userService.findById(command.getUserId());
+    if (hasDeposit) {
       requestPayment =
-          (TossPaymentResponse)
-              paymentService.requestPayment(depositAmount, User.get().getUsername());
+          (TossPaymentResponse) paymentService.requestPayment(depositAmount, user.getUsername());
       if (!StringUtils.hasText(requestPayment.getPaymentKey())) {
         throw new ApiException("예약금 결제 실패");
       }
@@ -298,7 +303,7 @@ public class ReservationRestService implements ReservationService {
     Reservation reservation =
         Reservation.builder()
             .restaurant(restaurant)
-            .user(user)
+            .userId(user.getId())
             .seat(seat)
             .reservationDate(command.getReservationDate())
             .reservationTime(command.getReservationTime())
@@ -307,13 +312,10 @@ public class ReservationRestService implements ReservationService {
                     .getReservationTime()
                     .plusMinutes(restaurantOperatingHours.getReservationInterval()))
             .status(
-                restaurant.getAutoConfirm() && depositAmount.equals(BigDecimal.ZERO)
+                restaurant.getAutoConfirm() && !hasDeposit
                     ? ReservationStatus.CONFIRMED
                     : ReservationStatus.PENDING)
-            .depositAmount(
-                restaurant.getDepositAmount().equals(BigDecimal.ZERO)
-                    ? BigDecimal.ZERO
-                    : restaurant.getDepositAmount())
+            .depositAmount(hasDeposit ? depositAmount : BigDecimal.ZERO)
             .paymentKey(
                 StringUtils.hasText(requestPayment.getPaymentKey())
                     ? requestPayment.getPaymentKey()
@@ -450,6 +452,13 @@ public class ReservationRestService implements ReservationService {
 
     RoleType currentUserRole = currentUser.getRole().getRoleType();
     Long ownerRestaurantId = null;
+    Long searchUserPk =
+        StringUtils.hasText(command.getUserId())
+            ? userService
+                .findByUserId(command.getUserId())
+                .map(User::getId)
+                .orElseThrow(() -> new ApiException("조회 대상 사용자를 찾을 수 없습니다."))
+            : null;
 
     // OWNER일 경우 소유한 Restaurant 조회
     if (RoleType.STORE_OWNER.equals(currentUserRole)) {
@@ -462,12 +471,12 @@ public class ReservationRestService implements ReservationService {
 
     Specification<Reservation> spec =
         ReservationSpecification.search(
-            command.getUserId(),
+            searchUserPk,
             command.getRestaurant_id(),
             command.getReservationStatus(),
             command.getReservationStarDate(),
             command.getReservationEndDate(),
-            currentUser.getUserID(),
+            currentUser.getId(),
             currentUserRole,
             ownerRestaurantId);
 

@@ -79,3 +79,14 @@
   
 ## 5. 데이터 베이스
 https://github.com/users/qkrwldn222/projects/1/views/3?pane=issue&itemId=101279944&issue=qkrwldn222%7CmyProject2025%7C16
+
+## 6. 로컬 실행 (Docker + 자동 테이블 생성)
+- 인프라 실행: `docker compose up -d`
+- 백엔드 실행: `sh gradlew :api:bootRun`
+- 현재 로컬 기본값은 `spring.jpa.hibernate.ddl-auto=update`라서 애플리케이션 시작 시 필요한 테이블을 자동 생성/갱신합니다.
+- MariaDB 초기화 스크립트로 `service` 스키마를 자동 생성해 JPA의 멀티 스키마(`common`, `service`) 테이블 생성이 가능하도록 구성되어 있습니다.
+
+## 7. 테스트 데이터 유지 정책
+- `docker-compose.yml`의 `mariadb_data`, `redis_data` 볼륨을 사용하므로 컨테이너를 재시작해도 데이터는 유지됩니다.
+- 데이터가 사라지는 경우는 보통 `docker compose down -v`처럼 볼륨까지 삭제했을 때입니다.
+- 데이터 유지가 필요할 때는 `docker compose stop` 또는 `docker compose down`(without `-v`)를 사용하세요.

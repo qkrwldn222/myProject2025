@@ -23,7 +23,7 @@ public class ReservationEventUseCase {
             ReservationEventStatus.CREATED,
             reservation.getReservationId(),
             reservation.getRestaurant().getId(),
-            reservation.getUser().getId(),
+            reservation.getUserId(),
             reservation.getStatus(),
             LocalDateTime.now());
     eventPublisher.sendReservationEvent("reservation.created", event);

@@ -22,9 +22,8 @@ public class RestaurantRegistration extends BaseEntity {
   @JoinColumn(name = "restaurant_id", nullable = false)
   private Restaurant restaurant;
 
-  @ManyToOne
-  @JoinColumn(name = "owner_id", nullable = false)
-  private User owner;
+  @Column(name = "owner_id", nullable = false)
+  private Long ownerId;
 
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)

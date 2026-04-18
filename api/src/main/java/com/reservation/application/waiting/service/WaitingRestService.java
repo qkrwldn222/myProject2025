@@ -28,7 +28,9 @@ public class WaitingRestService implements WaitingService {
 
   @Override
   public List<String> getWaitingList(Long restaurantId) {
-    return List.of();
+    List<String> waitingUsers =
+        redisTemplate.opsForList().range(RedisKeyUtil.createWaitingQueueKey(restaurantId), 0, -1);
+    return waitingUsers == null ? List.of() : waitingUsers;
   }
 
   /**

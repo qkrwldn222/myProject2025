@@ -15,7 +15,7 @@ spring:
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-    bootstrap-servers: localhost:9092  #Docker 환경에서 내부 접근
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
     admin:
       fail-fast: false  # KafkaAdmin이 실패할 경우 즉시 종료하지 않음
       auto-create: false  # KafkaAdmin이 자동으로 토픽을 만들지 않도록 설정
@@ -28,16 +28,16 @@ spring:
   application:
     name: reservation
   profiles:
-    active: local
+    active: ${SPRING_PROFILES_ACTIVE:local}
   datasource:
-    url: jdbc:mariadb://localhost:3306/common
-    username: root
-    password: 1234
+    url: jdbc:mariadb://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:common}
+    username: ${DB_USER:root}
+    password: ${DB_PASSWORD:1234}
     driver-class-name: org.mariadb.jdbc.Driver
   jpa:
     database-platform: org.hibernate.dialect.MariaDBDialect
     hibernate:
-      ddl-auto: none
+      ddl-auto: update
     properties:
       hibernate:
         default_schema: common
@@ -45,8 +45,8 @@ spring:
         show_sql: true
   cache :
     type : redis
-    host : localhost
-    port : 6379
+    host : ${REDIS_HOST:localhost}
+    port : ${REDIS_PORT:6379}
 
 
 cache:

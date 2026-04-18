@@ -12,6 +12,7 @@ import jakarta.annotation.PostConstruct;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
@@ -44,6 +45,10 @@ public class JwtTokenProvider {
     Set<String> existingTokens = redisTemplate.keys(RedisKeyUtil.JWT_PREFIX + "*");
     // 1. 기존 토큰 확인 (사용자가 이미 로그인한 경우 기존 토큰 가져오기)
     String existingToken = null;
+    if (existingTokens == null) {
+      existingTokens = Set.of();
+    }
+
     for (String token : existingTokens) {
       if (username.equals(getUsernameFromToken(token))) {
         existingToken = token;
@@ -77,8 +82,7 @@ public class JwtTokenProvider {
     // Redis에 저장 (만료시간 설정)
     redisTemplate
         .opsForValue()
-        .set(
-            RedisKeyUtil.JWT_PREFIX + jwt, roleCode, validityInMilliseconds, TimeUnit.MILLISECONDS);
+        .set(buildRedisKey(jwt), roleCode, validityInMilliseconds, TimeUnit.MILLISECONDS);
 
     return jwt;
   }
@@ -105,9 +109,10 @@ public class JwtTokenProvider {
   /** JWT 토큰 검증 (유효성 체크) */
   public boolean validateToken(String token) {
     try {
-      Jwts.parserBuilder().setSigningKey(secret).build().parseClaimsJws(token);
+      String rawJwt = toRawJwt(token);
+      Jwts.parserBuilder().setSigningKey(secret).build().parseClaimsJws(rawJwt);
       // Redis에 저장된 토큰인지 확인 (없으면 만료된 것)
-      return redisTemplate.hasKey(RedisKeyUtil.JWT_PREFIX + token);
+      return Boolean.TRUE.equals(redisTemplate.hasKey(buildRedisKey(rawJwt)));
     } catch (JwtException | IllegalArgumentException e) {
       return false;
     }
@@ -115,39 +120,35 @@ public class JwtTokenProvider {
 
   /** JWT에서 사용자명(Username) 추출 */
   public String getUsernameFromToken(String token) {
+    String rawJwt = toRawJwt(token);
     return Jwts.parserBuilder()
         .setSigningKey(secret)
         .build()
-        .parseClaimsJws(token.replace(RedisKeyUtil.JWT_PREFIX, ""))
+        .parseClaimsJws(rawJwt)
         .getBody()
         .getSubject();
   }
 
   /** JWT 토큰 추가 (로그아웃) */
   public void revokeToken(String token) {
-    if (!token.startsWith("Bearer ")) {
-      throw new ApiException("유효하지 않은 JWT 형식입니다.");
-    }
-    redisTemplate.delete(token.substring(7));
+    String rawJwt = toRawJwt(token);
+    redisTemplate.delete(buildRedisKey(rawJwt));
   }
 
   public String refreshJwtToken(String oldJwt) {
-    if (validateToken("Bearer " + oldJwt)) {
+    String oldRawJwt = toRawJwt(oldJwt);
+
+    if (!validateToken(oldRawJwt)) {
       throw new ApiException(" 만료되었거나 존재하지 않는 토큰입니다.");
     }
 
-    String roleCode = (String) redisTemplate.opsForValue().get(oldJwt);
+    String roleCode = (String) redisTemplate.opsForValue().get(buildRedisKey(oldRawJwt));
 
     // 기존 토큰 삭제
-    redisTemplate.delete(oldJwt);
+    redisTemplate.delete(buildRedisKey(oldRawJwt));
 
     // 새 토큰 생성
-    String newJwt = createToken(getUsernameFromToken(oldJwt), roleCode);
-
-    // Redis에 저장 (새로운 만료 시간 적용)
-    redisTemplate
-        .opsForValue()
-        .set(newJwt, roleCode, validityInMilliseconds, TimeUnit.MILLISECONDS);
+    String newJwt = createToken(getUsernameFromToken(oldRawJwt), roleCode);
 
     return newJwt;
   }
@@ -185,10 +186,42 @@ public class JwtTokenProvider {
   }
 
   public void clearAllReservationLocks() {
-    Set<String> keys = redisTemplate.keys("reservation:*"); // 예약 관련된 키만 삭제
-    keys.addAll(redisTemplate.keys("user-reservation:*"));
-    if (keys != null) {
+    Set<String> keys = new HashSet<>();
+    Set<String> reservationKeys = redisTemplate.keys("reservation:*");
+    Set<String> userReservationKeys = redisTemplate.keys("user-reservation:*");
+
+    if (reservationKeys != null) {
+      keys.addAll(reservationKeys);
+    }
+    if (userReservationKeys != null) {
+      keys.addAll(userReservationKeys);
+    }
+
+    if (!keys.isEmpty()) {
       redisTemplate.delete(keys);
     }
+  }
+
+  private String toRawJwt(String token) {
+    if (token == null || token.isBlank()) {
+      throw new ApiException("유효하지 않은 JWT 형식입니다.");
+    }
+
+    String normalized = token.trim();
+    if (normalized.startsWith("Bearer ")) {
+      normalized = normalized.substring(7);
+    }
+    if (normalized.startsWith(RedisKeyUtil.JWT_PREFIX)) {
+      normalized = normalized.substring(RedisKeyUtil.JWT_PREFIX.length());
+    }
+
+    if (normalized.isBlank()) {
+      throw new ApiException("유효하지 않은 JWT 형식입니다.");
+    }
+    return normalized;
+  }
+
+  private String buildRedisKey(String rawJwt) {
+    return RedisKeyUtil.JWT_PREFIX + rawJwt;
   }
 }

@@ -11,12 +11,12 @@ import org.springframework.data.jpa.domain.Specification;
 
 public class ReservationSpecification {
   public static Specification<Reservation> search(
-      String userId,
+      Long userId,
       Long restaurantId,
       ReservationStatus reservationStatus,
       LocalDate reservationStartDate,
       LocalDate reservationEndDate,
-      String currentUserId,
+      Long currentUserId,
       RoleType currentUserRole,
       Long currentOwnerRestaurantId) {
     return (root, query, criteriaBuilder) -> {
@@ -25,7 +25,7 @@ public class ReservationSpecification {
       // 관리자(admin)는 모든 데이터 접근 가능
       if (RoleType.ADMIN.equals(currentUserRole)) {
         if (userId != null) {
-          predicates.add(criteriaBuilder.equal(root.get("user").get("userId"), userId));
+          predicates.add(criteriaBuilder.equal(root.get("userId"), userId));
         }
         if (restaurantId != null) {
           predicates.add(criteriaBuilder.equal(root.get("restaurant").get("id"), restaurantId));
@@ -37,13 +37,13 @@ public class ReservationSpecification {
         predicates.add(
             criteriaBuilder.equal(root.get("restaurant").get("id"), currentOwnerRestaurantId));
         if (userId != null) {
-          predicates.add(criteriaBuilder.equal(root.get("user").get("userId"), userId));
+          predicates.add(criteriaBuilder.equal(root.get("userId"), userId));
         }
       }
 
       // 일반 유저는 자신만 조회 가능
       else {
-        predicates.add(criteriaBuilder.equal(root.get("user").get("userId"), currentUserId));
+        predicates.add(criteriaBuilder.equal(root.get("userId"), currentUserId));
       }
 
       // 예약 상태 조건 추가

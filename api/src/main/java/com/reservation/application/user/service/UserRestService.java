@@ -138,7 +138,8 @@ public class UserRestService implements UserService {
 
   @Override
   public String verifyCode(String email, String verificationCode) {
-    String storedCode = redisTemplate.opsForValue().get("AUTH_CODE:" + email).toString();
+    Object storedCodeObject = redisTemplate.opsForValue().get("AUTH_CODE:" + email);
+    String storedCode = storedCodeObject == null ? null : storedCodeObject.toString();
     if (!StringUtils.hasText(storedCode) || !storedCode.equals(verificationCode)) {
       throw new ApiException("잘못된 인증번호이거나 만료되었습니다.");
     }
@@ -148,7 +149,7 @@ public class UserRestService implements UserService {
     redisTemplate.opsForValue().set("RESET_TOKEN:" + resetToken, email, Duration.ofMinutes(10));
 
     // 기존 인증번호 삭제
-    redisTemplate.delete("VERIFICATION_CODE:" + email);
+    redisTemplate.delete("AUTH_CODE:" + email);
 
     return resetToken;
   }

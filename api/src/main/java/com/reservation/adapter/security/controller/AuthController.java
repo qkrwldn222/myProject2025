@@ -95,7 +95,7 @@ public class AuthController implements AuthSwagger {
 
   @PostMapping("/logout")
   public ResponseEntity<String> logout(@RequestHeader("Authorization") String token) {
-    jwtProvider.revokeToken(token);
+    jwtProvider.revokeToken(extractBearerToken(token));
     return ResponseEntity.ok("로그아웃 되었습니다.");
   }
 
@@ -103,7 +103,7 @@ public class AuthController implements AuthSwagger {
   public ResponseEntity<String> deleteUser(
       @RequestHeader("Authorization") String token, @RequestBody DeleteUserRequest request) {
     // 토큰에서 유저 정보 가져오기
-    String username = jwtProvider.getUsernameFromToken(token);
+    String username = jwtProvider.getUsernameFromToken(extractBearerToken(token));
 
     User user =
         userService.findByUsername(username).orElseThrow(() -> new ApiException("사용자를 찾을 수 없습니다."));
@@ -117,14 +117,14 @@ public class AuthController implements AuthSwagger {
     userService.deleteUserByUserID(request.getUserID());
 
     // 토큰 무효화
-    jwtProvider.revokeToken(token);
+    jwtProvider.revokeToken(extractBearerToken(token));
     return ResponseEntity.ok("탈퇴가 안료되었습니다.");
   }
 
   /** JWT 토큰 재발급 API */
   @PostMapping("/refresh-token")
   public ResponseEntity<JwtResponse> refreshToken(@RequestHeader("Authorization") String token) {
-    String oldJwt = token.substring(7);
+    String oldJwt = extractBearerToken(token);
     String newJwt = jwtProvider.refreshJwtToken(oldJwt);
     return ResponseEntity.ok(new JwtResponse(newJwt));
   }
@@ -156,5 +156,12 @@ public class AuthController implements AuthSwagger {
     jwtProvider.revokeTokenByUser(String.valueOf(user.getUserID()));
 
     return ResponseEntity.ok("비밀번호가 성공적으로 변경되었습니다.");
+  }
+
+  private String extractBearerToken(String authorizationHeader) {
+    if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+      throw new ApiException("유효하지 않은 JWT 형식입니다.");
+    }
+    return authorizationHeader.substring(7);
   }
 }

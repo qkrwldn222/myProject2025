@@ -129,10 +129,11 @@ public class RestaurantRestService implements RestaurantService {
     RestaurantRegistration registration =
         RestaurantRegistration.builder()
             .restaurant(restaurant)
-            .owner(
+            .ownerId(
                 userService
                     .findById(command.getOwnerId())
-                    .orElseThrow(() -> new ApiException("해당 사용자를 찾을 수 없습니다.")))
+                    .orElseThrow(() -> new ApiException("해당 사용자를 찾을 수 없습니다."))
+                    .getId())
             .status(RegistrationStatus.PENDING)
             .build();
     restaurantRegistrationRepository.save(registration);

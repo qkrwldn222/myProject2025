@@ -18,7 +18,7 @@ public interface ReservationResponseMapper {
   @Mapping(source = "restaurant.phoneNumber", target = "restaurantPhoneNumber")
   @Mapping(source = "restaurant.address", target = "restaurantAddress")
   @Mapping(source = "seat.seatId", target = "seatId")
-  @Mapping(source = "user.id", target = "userId")
+  @Mapping(source = "userId", target = "userId")
   @Mapping(source = "reservation.status", target = "reservationStatus")
   RestaurantReservationResponse toResponse(Reservation reservation);
 

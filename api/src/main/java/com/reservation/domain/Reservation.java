@@ -26,9 +26,8 @@ public class Reservation {
   @JoinColumn(name = "restaurant_id", nullable = false)
   private Restaurant restaurant;
 
-  @ManyToOne
-  @JoinColumn(name = "user_id", nullable = false)
-  private User user;
+  @Column(name = "user_id", nullable = false)
+  private Long userId;
 
   @ManyToOne
   @JoinColumn(name = "seat_id", nullable = false)
